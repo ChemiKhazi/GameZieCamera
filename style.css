@@ -12,6 +12,7 @@ padding: 1em;
 #filmroll
 {
 clear:both;
+max-width: 300px;
 }
 
 #filmroll img

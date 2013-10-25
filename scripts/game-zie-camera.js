@@ -39,24 +39,45 @@ var bayerThresholdMap = [
 	[ 10, 6, 9, 5]*/
 ];
 
+var lumR = [];
+var lumG = [];
+var lumB = [];
+for (var i=0; i<256; i++) {
+  lumR[i] = i*0.299;
+  lumG[i] = i*0.587;
+  lumB[i] = i*0.114;
+  /*lumR[i] = i*0.2126;
+  lumG[i] = i*0.7152;
+  lumB[i] = i*0.0722;*/
+}
+
+var palette = [
+	[255, 214, 156],
+	[115,198,198],
+	[255, 99, 41],
+	[49, 74, 99]];
+
+function getIndex(color)
+{
+	var luminance =  Math.floor(lumR[color[0]] + lumG[color[1]] + lumB[color[2]]);
+	//var paletteIndex = Math.round((luminance / 255) * 3);
+	return [luminance, luminance, luminance];
+}
+
 function getClosest(color)
 {
-	var palette = [
-		[255, 214, 156],
-		[115,198,198],
-		[255, 99, 41],
-		[49, 74, 99]];
-	
 	var closest = Number.MAX_VALUE;
 	var closestColor = palette[3];
 	for (var i = 0; i < palette.length; i++)
 	{
 		// Calculate closeness
 		var testPal = palette[i];
-		var rVal
-		var closeness = (color[0] - testPal[0]) * (color[0] - testPal[0]);
-		closeness += (color[1] - testPal[1]) * (color[1] - testPal[1]);
-		closeness += (color[2] - testPal[2]) * (color[2] - testPal[2]);
+		var closeness = 0;
+		for (var channelIdx = 0; channelIdx < 3; channelIdx++)
+		{
+			var value = (color[channelIdx] - testPal[channelIdx]);
+			closeness += value * value;
+		}
 		
 		if (closeness < closest)
 		{
@@ -67,8 +88,9 @@ function getClosest(color)
 	return closestColor;
 }
 
-function monochrome(imageData, threshold)
+function processImage(imageData, threshold)
 {
+  var scaledImageData = context.createImageData(gbWidth * 2, gbHeight * 2);
   var imageDataLength = imageData.data.length;
   
   var w = imageData.width;
@@ -78,45 +100,25 @@ function monochrome(imageData, threshold)
 	var x = currentPixel/4 % w;
 	var y = Math.floor(currentPixel/4 / w);
 	
-	var row = (y+1) * (w * 4);
 	
+	// Pack all the calculated dithered colors
 	var factor = bayerThresholdMap[x%4][y%4];
 	var pixelColor = [];
 	for (var i = 0; i < 3; i++)
 	{
 		pixelColor[i] = imageData.data[currentPixel + i] + factor * threshold;
 	}
+	// Get the color
 	pixelColor = getClosest(pixelColor);
-	for (var i = 0; i < 3; i++)
+	//pixelColor = getIndex(pixelColor);
+	/*for (var i = 0; i < 3; i++)
 	{
 		imageData.data[currentPixel + i] = pixelColor[i];
-	}
-  }
-
-  return imageData;
-}
-
-function scaleHardPixels(imageData)
-{
-  
-  var scaledImageData = context.createImageData(gbWidth * 2, gbHeight * 2);
-  
-  var w = imageData.width;
-
-  var imageDataLength = imageData.data.length;
-  for (var currentPixel = 0; currentPixel <= imageDataLength; currentPixel+=4)
-  {
-	var x = currentPixel/4 % w;
-	var y = Math.floor(currentPixel/4 / w);
+	}*/
 	
+	// Put the caclulated colors into a scaled image data
 	var scaledPixel = (2 * (y * w * 8)) + x * 8;
 	var nextRowPixel = scaledPixel + (w * 8);
-	
-	var pixelColor = [];
-	for (var i = 0; i < 3; i++)
-	{
-		pixelColor[i] = imageData.data[currentPixel + i];
-	}
 	for (var i = 0; i < 4; i++)
 	{
 		if (i != 3)
@@ -130,28 +132,12 @@ function scaleHardPixels(imageData)
 			scaledImageData.data[nextRowPixel + 3] = scaledImageData.data[nextRowPixel + 7] = 255;
 		}
 	}
-	
-	/*
-	var nextRowPixel = ((y+1) * (w * 8)) + (x*4);
-	
-	scaledImageData[currentPixel]
-	// Fill red rows
-	scaledImageData[currentPixel] = scaledImageData[currentPixel + 4] = imageData[currentPixel];
-	scaledImageData[nextRowPixel] = scaledImageData[nextRowPixel + 4] = imageData[currentPixel];
-	
-	scaledImageData[currentPixel+1] = scaledImageData[currentPixel + 5] = imageData[currentPixel+1];
-	scaledImageData[nextRowPixel+1] = scaledImageData[nextRowPixel + 5] = imageData[currentPixel+1];
-	
-	scaledImageData[currentPixel+2] = scaledImageData[currentPixel + 6] = imageData[currentPixel+2];
-	scaledImageData[nextRowPixel+2] = scaledImageData[nextRowPixel + 6] = imageData[currentPixel+2];
-	
-	scaledImageData[currentPixel + 3] = scaledImageData[currentPixel + 7] = 255;
-	scaledImageData[nextRowPixel + 3] = scaledImageData[nextRowPixel + 7] = 255;
-	*/
   }
   
+  // Put the scaled image into the context
   context.putImageData(scaledImageData, 0, 0);
 }
+
 /*
 end monochrome code
 */
@@ -191,7 +177,7 @@ function toggleRecord()
 {
 	if (recordGif == null)
 	{
-		recordGif = new GIF({workers: 3, quality: 10});
+		recordGif = new GIF({workers: 10, quality: 10});
 		recordRendering = false;
 		btnRecord.innerHTML = "Stop Recording";
 	}
@@ -255,12 +241,7 @@ function updateCamera(timestamp)
 	bufferContext.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, gbWidth, gbHeight);
 	var imageData = bufferContext.getImageData(0, 0, gbWidth, gbHeight);
 	// Run the buffer through the monochrome code
-	var monoImage = monochrome(imageData, thresholdControl.value);
-	
-	//bufferContext.putImageData(monoImage, 0, 0);
-	//context.drawImage(buffer, 0, 0, gbWidth, gbHeight, 0, 0, gbWidth * 2, gbHeight * 2);
-	
-	scaleHardPixels(monoImage);
+	processImage(imageData, thresholdControl.value);
 	
 	// If user is recording, put frames into recorder
 	if (recordGif != null)
