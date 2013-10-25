@@ -16,8 +16,8 @@ var thresholdControl = document.getElementById('threshold');
 var btnRecord = document.getElementById("record-button");
 var btnPicture = document.getElementById("picture-button");
 
-var gbWidth = 256;
-var gbHeight = 224;
+var gbWidth = 128;
+var gbHeight = 112;
 
 var recordGif = null;
 var recordStart = null;
@@ -67,12 +67,11 @@ function getClosest(color)
 	return closestColor;
 }
 
-function monochrome(imageData, threshold){
-
+function monochrome(imageData, threshold)
+{
   var imageDataLength = imageData.data.length;
   
   var w = imageData.width;
-  var newPixel, err;
 
   for (var currentPixel = 0; currentPixel <= imageDataLength; currentPixel+=4) {
 	// 4x4 Bayer ordered dithering algorithm
@@ -96,6 +95,63 @@ function monochrome(imageData, threshold){
 
   return imageData;
 }
+
+function scaleHardPixels(imageData)
+{
+  
+  var scaledImageData = context.createImageData(gbWidth * 2, gbHeight * 2);
+  
+  var w = imageData.width;
+
+  var imageDataLength = imageData.data.length;
+  for (var currentPixel = 0; currentPixel <= imageDataLength; currentPixel+=4)
+  {
+	var x = currentPixel/4 % w;
+	var y = Math.floor(currentPixel/4 / w);
+	
+	var scaledPixel = (2 * (y * w * 8)) + x * 8;
+	var nextRowPixel = scaledPixel + (w * 8);
+	
+	var pixelColor = [];
+	for (var i = 0; i < 3; i++)
+	{
+		pixelColor[i] = imageData.data[currentPixel + i];
+	}
+	for (var i = 0; i < 4; i++)
+	{
+		if (i != 3)
+		{
+			scaledImageData.data[scaledPixel + i] = scaledImageData.data[scaledPixel + i + 4] = pixelColor[i];
+			scaledImageData.data[nextRowPixel + i] = scaledImageData.data[nextRowPixel + i + 4] = pixelColor[i];
+		}
+		else
+		{
+			scaledImageData.data[scaledPixel + 3] = scaledImageData.data[scaledPixel + 7] = 255;
+			scaledImageData.data[nextRowPixel + 3] = scaledImageData.data[nextRowPixel + 7] = 255;
+		}
+	}
+	
+	/*
+	var nextRowPixel = ((y+1) * (w * 8)) + (x*4);
+	
+	scaledImageData[currentPixel]
+	// Fill red rows
+	scaledImageData[currentPixel] = scaledImageData[currentPixel + 4] = imageData[currentPixel];
+	scaledImageData[nextRowPixel] = scaledImageData[nextRowPixel + 4] = imageData[currentPixel];
+	
+	scaledImageData[currentPixel+1] = scaledImageData[currentPixel + 5] = imageData[currentPixel+1];
+	scaledImageData[nextRowPixel+1] = scaledImageData[nextRowPixel + 5] = imageData[currentPixel+1];
+	
+	scaledImageData[currentPixel+2] = scaledImageData[currentPixel + 6] = imageData[currentPixel+2];
+	scaledImageData[nextRowPixel+2] = scaledImageData[nextRowPixel + 6] = imageData[currentPixel+2];
+	
+	scaledImageData[currentPixel + 3] = scaledImageData[currentPixel + 7] = 255;
+	scaledImageData[nextRowPixel + 3] = scaledImageData[nextRowPixel + 7] = 255;
+	*/
+  }
+  
+  context.putImageData(scaledImageData, 0, 0);
+}
 /*
 end monochrome code
 */
@@ -107,9 +163,10 @@ function noStream() {
 
 function gotStream(stream)
 {
-	buffer.width = canvas.width = gbWidth;
-	buffer.height = canvas.height = gbHeight;
-	
+	buffer.width = gbWidth;
+	buffer.height = gbHeight;
+	canvas.width = gbWidth * 2;
+	canvas.height = gbHeight * 2;
     videoStream = stream;
     video.onerror = function () {
         alert('video.onerror');
@@ -200,7 +257,10 @@ function updateCamera(timestamp)
 	// Run the buffer through the monochrome code
 	var monoImage = monochrome(imageData, thresholdControl.value);
 	
-	context.putImageData(monoImage, 0, 0);
+	//bufferContext.putImageData(monoImage, 0, 0);
+	//context.drawImage(buffer, 0, 0, gbWidth, gbHeight, 0, 0, gbWidth * 2, gbHeight * 2);
+	
+	scaleHardPixels(monoImage);
 	
 	// If user is recording, put frames into recorder
 	if (recordGif != null)
