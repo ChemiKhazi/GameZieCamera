@@ -8,7 +8,7 @@
 <canvas id="buffer" style="display:none"></canvas>
 <canvas id="canvas"></canvas>
 <p><a href="#" onclick="snap()">Take a picture!</a></p>
-<p>Dither Threshold <input id="threshold" type="number" value=130></input></p>
+<p>Dither Threshold <input id="threshold" type="range" min=0 max=255 value=130></input></p>
 <p>Game Zie Camera, a HTML5 experiment inspired by <a href="https://twitter.com/christinelove">@christinelove</a>'s <a href="http://loveconquersallgam.es/post/64940265113/so-this-is-a-thing-that-im-working-on-right-now">Super Game Girl Camera</a>. Someone pipe understanding of color palette dithering code into mah brain pleases.</p>
 <div id="filmroll"></div>
 <script>
@@ -65,47 +65,52 @@ function monochrome(imageData, threshold){
   for (var currentPixel = 0; currentPixel <= imageDataLength; currentPixel+=4) {
 	// 4x4 Bayer ordered dithering algorithm
 	var x = currentPixel/4 % w;
+	//if ((x%2) != 0)
+	//	continue;
+		
 	var y = Math.floor(currentPixel/4 / w);
-	var map = Math.floor( (imageData.data[currentPixel] + bayerThresholdMap[x%4][y%4]) / 2 );
-	var outColor = (map < threshold) ? 0 : 255;
+	//if ((y%2) != 0)
+	//	continue;
+	
+	var row = (y+1) * (w * 4);
+	
+	var avgRed = imageData.data[currentPixel];
+	/*avgRed += imageData.data[currentPixel + 4];
+	avgRed += imageData.data[row + (x*4)];
+	avgRed += imageData.data[row + (x*4)+4];
+	avgRed /= 4;*/
 	
 	/*
-	var r = imageData.data[currentPixel];
-	var g = imageData.data[currentPixel + 1];
-	var b = imageData.data[currentPixel + 2];
+	// 2x pixelation test
+	var avgBlue = imageData.data[currentPixel + 1];
+	avgBlue += imageData.data[currentPixel + 5];
+	avgBlue += imageData.data[row + (x*4) + 1];
+	avgBlue += imageData.data[row + (x*4) + 5];
+	avgBlue /= 4;
 	
-	if (outColor > 255*0.75)
-	{
-		r = 255;
-		g = 214;
-		b = 156;
-	}
-	else if (outColor > 255*0.5)
-	{
-		r = 115;
-		g = 198;
-		b = 198;
-	}
-	else if (outColor > 255*0.25)
-	{
-		r = 255;
-		g = 99;
-		b = 41;
-	}
-	else
-	{
-		r = 49;
-		g = 74;
-		b = 99;
-	}
+	var avgGreen = imageData.data[currentPixel + 2];
+	avgGreen += imageData.data[currentPixel + 6];
+	avgGreen += imageData.data[row + (x*4) + 2];
+	avgGreen += imageData.data[row + (x*4) + 6];
+	avgGreen /= 4;
 	
-	imageData.data[currentPixel] = r;
-	imageData.data[currentPixel + 1] = g;
-	imageData.data[currentPixel + 2] = b;
+	imageData.data[currentPixel] = imageData.data[currentPixel+4] = imageData.data[row + (x*4)] = imageData.data[row + (x*4)+4] = avgRed;
+	
+	imageData.data[currentPixel+1] = imageData.data[currentPixel+5] = imageData.data[row + (x*4)+1] = imageData.data[row + (x*4)+5] = avgBlue;
+	
+	imageData.data[currentPixel+2] = imageData.data[currentPixel+6] = imageData.data[row + (x*4)+2] = imageData.data[row + (x*4)+6] = avgGreen;
 	*/
 	
+	var map = Math.floor( (avgRed + bayerThresholdMap[x%4][y%4]) / 2 );
+	var outColor = (map < threshold) ? 0 : 255;
+	
     // Set g and b pixels equal to r
+	
     imageData.data[currentPixel + 1] = imageData.data[currentPixel + 2] = imageData.data[currentPixel] = outColor;
+	//imageData.data[currentPixel + 4] = imageData.data[currentPixel + 5] = imageData.data[currentPixel + 6] = outColor;
+	
+	//imageData.data[row + (x*4)] = imageData.data[row + (x*4)+1] = imageData.data[row + (x*4)+2] = //imageData.data[row + (x*4)+4] = imageData.data[row + (x*4)+5] = imageData.data[row + (x*4)+6] = outColor;
+	
   }
 
   return imageData;
@@ -144,13 +149,15 @@ function drawPixels(timestamp)
 	var monoImage = monochrome(imageData, thresholdControl.value);
 	
 	context.putImageData(monoImage, 0, 0);
+	
 	requestAnimationFrame(drawPixels);
 }
 
 function gotStream(stream)
 {
-	canvas.width = buffer.width = gbWidth;
-	canvas.height = buffer.height = gbHeight;
+	buffer.width = canvas.width = gbWidth;
+	buffer.height = canvas.height = gbHeight;
+	
     videoStream = stream;
     video.onerror = function () {
         alert('video.onerror');
