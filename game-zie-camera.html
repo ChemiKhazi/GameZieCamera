@@ -1,0 +1,214 @@
+<html>
+<head>
+<title>Game Zie Camera</title>
+</head>
+
+<body>
+<video id="video" autoplay="autoplay" style="display:none"></video>
+<canvas id="buffer" style="display:none"></canvas>
+<canvas id="canvas"></canvas>
+<script src="close-pixelate.js"></script>
+<p><a href="#" onclick="snap()">Take a picture!</a></p>
+<p>Dither Threshold <input id="threshold" type="number" value=130></input></p>
+<p>Game Zie Camera, a HTML5 experiment inspired by <a href="https://twitter.com/christinelove">@christinelove</a>'s <a href="http://loveconquersallgam.es/post/64940265113/so-this-is-a-thing-that-im-working-on-right-now">Super Game Girl Camera</a>. Someone pipe understanding of color palette dithering code into mah brain pleases.</p>
+<div id="filmroll"></div>
+<script>
+(function() {
+  var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+                              window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+  window.requestAnimationFrame = requestAnimationFrame;
+})();
+/*
+Base camera code from alexandre.alapetite.fr/doc-alex/html5-webcam/index.en.html
+*/
+var video = document.getElementById('video');
+var canvas = document.getElementById('canvas');
+var context = canvas.getContext('2d');
+var buffer = document.getElementById('buffer');
+var bufferContext = buffer.getContext('2d');
+var videoStream = null;
+var thresholdControl = document.getElementById('threshold');
+
+var gbWidth = 256;
+var gbHeight = 224;
+/*
+monochrome code from
+https://github.com/meemoo/iframework/blob/gh-pages/src/nodes/image-monochrome-worker.js
+*/
+var bayerThresholdMap = [
+  [  15, 135,  45, 165 ],
+  [ 195,  75, 225, 105 ],
+  [  60, 180,  30, 150 ],
+  [ 240, 120, 210,  90 ]
+];
+
+var lumR = [];
+var lumG = [];
+var lumB = [];
+for (var i=0; i<gbWidth; i++) {
+  lumR[i] = i*0.299;
+  lumG[i] = i*0.587;
+  lumB[i] = i*0.114;
+}
+
+function monochrome(imageData, threshold){
+
+  var imageDataLength = imageData.data.length;
+
+  // Greyscale luminance (sets r pixels to luminance of rgb)
+  for (var i = 0; i <= imageDataLength; i += 4) {
+    imageData.data[i] = Math.floor(lumR[imageData.data[i]] + lumG[imageData.data[i+1]] + lumB[imageData.data[i+2]]);
+  }
+
+  var w = imageData.width;
+  var newPixel, err;
+
+  for (var currentPixel = 0; currentPixel <= imageDataLength; currentPixel+=4) {
+	// 4x4 Bayer ordered dithering algorithm
+	var x = currentPixel/4 % w;
+	var y = Math.floor(currentPixel/4 / w);
+	var map = Math.floor( (imageData.data[currentPixel] + bayerThresholdMap[x%4][y%4]) / 2 );
+	var outColor = (map < threshold) ? 0 : 255;
+	
+	/*
+	var r = imageData.data[currentPixel];
+	var g = imageData.data[currentPixel + 1];
+	var b = imageData.data[currentPixel + 2];
+	
+	if (outColor > 255*0.75)
+	{
+		r = 255;
+		g = 214;
+		b = 156;
+	}
+	else if (outColor > 255*0.5)
+	{
+		r = 115;
+		g = 198;
+		b = 198;
+	}
+	else if (outColor > 255*0.25)
+	{
+		r = 255;
+		g = 99;
+		b = 41;
+	}
+	else
+	{
+		r = 49;
+		g = 74;
+		b = 99;
+	}
+	
+	imageData.data[currentPixel] = r;
+	imageData.data[currentPixel + 1] = g;
+	imageData.data[currentPixel + 2] = b;
+	*/
+	
+    // Set g and b pixels equal to r
+    imageData.data[currentPixel + 1] = imageData.data[currentPixel + 2] = imageData.data[currentPixel] = outColor;
+  }
+
+  return imageData;
+}
+/// end mono
+
+function noStream() {
+    alert('Access to camera was denied!');
+}
+
+function drawPixels(timestamp)
+{
+	// Figure out the part of the video we need to grab
+	var targetWidthRatio = gbWidth/gbHeight;
+	var videoWidthRatio = video.videoWidth/video.videoHeight;
+	
+	var sourceX, sourceY, sourceWidth, sourceHeight = 0;
+	
+	if (videoWidthRatio < targetWidthRatio)
+	{
+		targetHeightRatio = gbHeight/gbWidth;
+		sourceWidth = video.videoWidth;
+		sourceHeight = Math.floor(video.videoWidth * targetHeightRatio);
+	}
+	else
+	{
+		sourceHeight = video.videoHeight;
+		sourceWidth = video.videoHeight * targetWidthRatio;
+	}
+	
+	sourceX = Math.floor((video.videoWidth/2)-(sourceWidth/2));
+	sourceY = Math.floor((video.videoHeight/2) - (sourceHeight/2));
+	
+	bufferContext.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, gbWidth, gbHeight);
+	var imageData = bufferContext.getImageData(0, 0, gbWidth, gbHeight);
+	var monoImage = monochrome(imageData, thresholdControl.value);
+	
+	context.putImageData(monoImage, 0, 0);
+	requestAnimationFrame(drawPixels);
+}
+
+function gotStream(stream)
+{
+	canvas.width = buffer.width = gbWidth;
+	canvas.height = buffer.height = gbHeight;
+    videoStream = stream;
+    video.onerror = function () {
+        alert('video.onerror');
+    };
+    stream.onended = noStream;
+    if (window.webkitURL) video.src = window.webkitURL.createObjectURL(stream);
+    else if (video.mozSrcObject !== undefined) { //FF18a
+        video.mozSrcObject = stream;
+        video.play();
+    } else if (navigator.mozGetUserMedia) { //FF16a, 17a
+        video.src = stream;
+        video.play();
+    } else if (window.URL) video.src = window.URL.createObjectURL(stream);
+    else video.src = stream;
+	
+	requestAnimationFrame(drawPixels);
+}
+
+function snap()
+{
+	var filmroll = document.getElementById("filmroll");
+	img = document.createElement("img");
+	img.src = canvas.toDataURL("image/png");
+	img.style.padding = 5;
+	img.width = canvas.width;
+	img.height = canvas.height;
+	filmroll.insertBefore(img, filmroll.firstChild);
+}
+
+function start() {
+    if ((typeof window === 'undefined') || (typeof navigator === 'undefined'))
+		alert('This page needs a Web browser with the objects window.* and navigator.*!');
+    else if (!(video && canvas)) alert('HTML context error!');
+    else {
+        //log('Get user media…');
+        if (navigator.getUserMedia) navigator.getUserMedia({
+            video: true
+        }, gotStream, noStream);
+        else if (navigator.oGetUserMedia) navigator.oGetUserMedia({
+            video: true
+        }, gotStream, noStream);
+        else if (navigator.mozGetUserMedia) navigator.mozGetUserMedia({
+            video: true
+        }, gotStream, noStream);
+        else if (navigator.webkitGetUserMedia) navigator.webkitGetUserMedia({
+            video: true
+        }, gotStream, noStream);
+        else if (navigator.msGetUserMedia) navigator.msGetUserMedia({
+            video: true,
+            audio: false
+        }, gotStream, noStream);
+        else alert('getUserMedia() not available from your Web browser!');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', start ,false);
+</script>
+</body>
+
+</html>
