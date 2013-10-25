@@ -13,6 +13,9 @@ var bufferContext = buffer.getContext('2d');
 var videoStream = null;
 var thresholdControl = document.getElementById('threshold');
 
+var btnRecord = document.getElementById("record-button");
+var btnPicture = document.getElementById("picture-button");
+
 var gbWidth = 256;
 var gbHeight = 224;
 
@@ -133,6 +136,7 @@ function toggleRecord()
 	{
 		recordGif = new GIF({workers: 3, quality: 10});
 		recordRendering = false;
+		btnRecord.innerHTML = "Stop Recording";
 	}
 	else if (!recordRendering)
 	{
@@ -143,10 +147,12 @@ function toggleRecord()
 				recordGif = null;
 				recordStart = null;
 				recordRendering = false;
+				btnRecord.innerHTML = "GIF";
 			}
 		});
 		recordGif.render();
 		recordRendering = true;
+		btnRecord.innerHTML = "Rendering...";
 	}
 }
 
@@ -219,6 +225,9 @@ function updateCamera(timestamp)
 }
 
 function start() {
+	btnRecord.onclick = toggleRecord;
+	btnPicture.onclick = snap;
+	
     if ((typeof window === 'undefined') || (typeof navigator === 'undefined'))
 		alert('This page needs a Web browser with the objects window.* and navigator.*!');
     else if (!(video && canvas)) alert('HTML context error!');
