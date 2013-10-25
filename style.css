@@ -1,0 +1,20 @@
+#view
+{
+float: left;
+padding: 1em;
+}
+
+#control-panel
+{
+padding: 1em;
+}
+
+#filmroll
+{
+clear:both;
+}
+
+#filmroll img
+{
+	padding: 0.5em;
+}
