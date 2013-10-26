@@ -52,16 +52,27 @@ for (var i=0; i<256; i++) {
 }
 
 var palette = [
-	[255, 214, 156],
-	[115,198,198],
+	[49, 74, 99],
 	[255, 99, 41],
-	[49, 74, 99]];
+	[115,198,198],
+	[255, 214, 156]
+	];
 
 function getIndex(color)
 {
-	var luminance =  Math.floor(lumR[color[0]] + lumG[color[1]] + lumB[color[2]]);
-	//var paletteIndex = Math.round((luminance / 255) * 3);
-	return [luminance, luminance, luminance];
+	var luminance = Math.floor(lumR[color[0]] + lumG[color[1]] + lumB[color[2]]);	
+	/*var steps = 4;
+	var paletteIndex = Math.floor(Math.max(0, Math.min(steps, ((luminance / 255) * steps)) ));*/
+	var paletteIndex = 0;
+	if (luminance < 90)
+		paletteIndex = 0;
+	else if (luminance < 135)
+		paletteIndex = 1;
+	else if (luminance < 170)
+		paletteIndex = 2;
+	else
+		paletteIndex = 3;
+	return palette[paletteIndex];// [luminance,luminance,luminance];
 }
 
 function getClosest(color)
@@ -95,7 +106,7 @@ function processImage(imageData, threshold)
   
   var w = imageData.width;
 
-  for (var currentPixel = 0; currentPixel <= imageDataLength; currentPixel+=4) {
+  for (var currentPixel = 0; currentPixel < imageDataLength; currentPixel+=4) {
 	// 4x4 Bayer ordered dithering algorithm
 	var x = currentPixel/4 % w;
 	var y = Math.floor(currentPixel/4 / w);
@@ -106,17 +117,17 @@ function processImage(imageData, threshold)
 	var pixelColor = [];
 	for (var i = 0; i < 3; i++)
 	{
-		pixelColor[i] = imageData.data[currentPixel + i] + factor * threshold;
+		pixelColor[i] = Math.min(255, imageData.data[currentPixel + i] + factor * threshold);
 	}
 	// Get the color
-	pixelColor = getClosest(pixelColor);
-	//pixelColor = getIndex(pixelColor);
+	//pixelColor = getClosest(pixelColor);
+	pixelColor = getIndex(pixelColor);
 	/*for (var i = 0; i < 3; i++)
 	{
 		imageData.data[currentPixel + i] = pixelColor[i];
 	}*/
 	
-	// Put the caclulated colors into a scaled image data
+	// Put the caclulated colors into the scaled image data
 	var scaledPixel = (2 * (y * w * 8)) + x * 8;
 	var nextRowPixel = scaledPixel + (w * 8);
 	for (var i = 0; i < 4; i++)
@@ -218,24 +229,18 @@ function newSnap(source)
 function updateCamera(timestamp)
 {
 	// Figure out the part of the video we need to grab
-	var targetWidthRatio = gbWidth/gbHeight;
-	var videoWidthRatio = video.videoWidth/video.videoHeight;
-	
 	var sourceX, sourceY, sourceWidth, sourceHeight = 0;
+	sourceWidth = gbWidth * 3.5;
+	sourceHeight = gbHeight * 3.5;
 	
-	if (videoWidthRatio < targetWidthRatio)
+	if (sourceWidth > video.videoWidth)
 	{
-		targetHeightRatio = gbHeight/gbWidth;
+		var targetHeightRatio = gbHeight/gbWidth;
 		sourceWidth = video.videoWidth;
-		sourceHeight = Math.floor(video.videoWidth * targetHeightRatio);
-	}
-	else
-	{
-		sourceHeight = video.videoHeight;
-		sourceWidth = video.videoHeight * targetWidthRatio;
+		souceHeight = Math.floor(video.videoWidth * targetHeightRatio);
 	}
 	
-	sourceX = Math.floor((video.videoWidth/2)-(sourceWidth/2));
+	sourceX = Math.floor((video.videoWidth/2) - (sourceWidth/2));
 	sourceY = Math.floor((video.videoHeight/2) - (sourceHeight/2));
 	// Copy that part of the video to the buffer context
 	bufferContext.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, gbWidth, gbHeight);
