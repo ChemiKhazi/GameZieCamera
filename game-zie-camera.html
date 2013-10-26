@@ -10,20 +10,30 @@
 	<canvas id="buffer"></canvas>
 	<canvas id="canvas"></canvas>
 </div>
+
 <div id="control-panel">
 	<p>
+	<button id="show-opts-button" type="button">Options</button>
 	<button id="picture-button" type="button">Snap</button>
-	</p>
-	<p>
 	<button id="record-button" type="button">GIF</button>
 	</p>
-	<p>Dither<input id="threshold" type="range" min=1.0 max=10.0 value=5.0></input></p>
 </div>
 
+<div id="options">
+	<p>Dither<input id="threshold" type="range" min=1.0 max=10.0 value=6.0></input></p>
+	<p>Palette
+	<button type="button" onclick="swapPalette(0)">0</button>
+	<button type="button" onclick="swapPalette(1)">1</button>
+	<button type="button" onclick="swapPalette(2)">2</button>
+	</p>
+	<p><button type="button" onclick="toggleColorMode()">Color Mode</button></p>
+</div>
+
+<p id="film-description">Filmroll</p>
 <div id="filmroll">
 </div>
 
-<p>Game Zie Camera, a HTML5 experiment by <a href="https://twitter.com/chemikhazi">@chemikhazi</a>. Inspired by <a href="https://twitter.com/christinelove">@christinelove</a>'s <a href="http://loveconquersallgam.es/post/64940265113/so-this-is-a-thing-that-im-working-on-right-now">Super Game Girl Camera</a>.</p>
+<p id="description">Game Zie Camera, a HTML5 experiment by <a href="https://twitter.com/chemikhazi">@chemikhazi</a>. Inspired by <a href="https://twitter.com/christinelove">@christinelove</a>'s <a href="http://loveconquersallgam.es/post/64940265113/so-this-is-a-thing-that-im-working-on-right-now">Super Game Girl Camera</a>.</p>
 
 <script src="scripts/gif.js"></script>
 <script src="scripts/game-zie-camera.js"></script>

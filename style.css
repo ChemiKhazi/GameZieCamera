@@ -1,26 +1,73 @@
+body
+{
+width: 300px;
+max-width: 300px;
+}
+
 #buffer, #video
 {
-	display: none;
+display: none;
 }
 
-#view
+#view, #control-panel
+{
+margin: 1em auto;
+padding: 0;
+width: 256px;
+text-align: center;
+}
+
+#show-opts-button
 {
 float: left;
-padding: 1em;
 }
 
-#control-panel
+#picture-button, #record-button
 {
-padding: 1em;
+float: right;
+}
+
+#options, #description, p
+{
+margin: 0 auto;
+padding: 0;
+width: 256px;
+text-align: center
+}
+
+#options
+{
+visibility: hidden;
+clear: both;
+height: 0px;
+margin: 5px 0px;
+}
+
+#options p
+{
+text-align: left;
+padding-left: 20px;
+}
+
+#options button
+{
+margin: 0 -3px;
 }
 
 #filmroll
 {
-clear:both;
-max-width: 300px;
+margin: 0 auto;
+padding: 0;
+width: 276px;
+text-align: center;
+max-height: 510px;
+min-height: 120px;
+overflow-y: auto;
+overflow-x: hidden;
 }
 
 #filmroll img
 {
-	padding: 0.5em;
+	padding: 5px 10px;
+	display: inline;
 }

@@ -15,28 +15,32 @@ var thresholdControl = document.getElementById('threshold');
 
 var btnRecord = document.getElementById("record-button");
 var btnPicture = document.getElementById("picture-button");
-
+var btnOpts = document.getElementById("show-opts-button");
 var gbWidth = 128;
 var gbHeight = 112;
+
+var optionsPanel = document.getElementById("options");
+optionsPanel.style.visibility = "hidden";
 
 var recordGif = null;
 var recordStart = null;
 var recordRendering = false
 
+var colorMode = "index";
 
 /*
 monochrome code partially from
 https://github.com/meemoo/iframework/blob/gh-pages/src/nodes/image-monochrome-worker.js
 */
 var bayerThresholdMap = [
-	[  1,  9,  3, 11 ],
+/*	[  1,  9,  3, 11 ],
 	[ 13,  5, 15,  7 ],
 	[  4, 12,  2, 10 ],
-	[ 16,  8, 14,  6 ]
-/*	[ 0, 12, 3, 15],
+	[ 16,  8, 14,  6 ]*/
+	[ 0, 12, 3, 15],
 	[ 8, 4, 11, 7],
 	[ 2, 14, 1, 13],
-	[ 10, 6, 9, 5]*/
+	[ 10, 6, 9, 5]
 ];
 
 var lumR = [];
@@ -58,6 +62,40 @@ var palette = [
 	[115,198,198, 135],
 	[255, 214, 156, 170]
 	];
+	
+var paletteChoices = [
+	[
+	[49, 74, 99, 0],
+	[255, 99, 41, 90],
+	[115,198,198, 135],
+	[255, 214, 156, 170]
+	],
+	[
+	[8, 56, 8, 0],
+	[48, 96, 48, 90],
+	[136,168,8, 135],
+	[183, 220, 17, 170]
+	],
+	[
+	[41, 41, 156, 0],
+	[123, 49, 239, 90],
+	[239, 140, 140, 135],
+	[255, 198, 255, 170]
+	]
+];
+
+function swapPalette(index)
+{
+palette = paletteChoices[index];
+}
+
+function toggleColorMode()
+{
+if (colorMode == "index")
+	colorMode = "near";
+else
+	colorMode = "index";
+}
 
 function getIndex(color)
 {
@@ -114,7 +152,6 @@ function processImage(imageData, threshold)
 	var x = currentPixel/4 % w;
 	var y = Math.floor(currentPixel/4 / w);
 	
-	
 	// Pack all the calculated dithered colors
 	var factor = bayerThresholdMap[x%4][y%4];
 	var pixelColor = [];
@@ -123,12 +160,10 @@ function processImage(imageData, threshold)
 		pixelColor[i] = Math.min(255, imageData.data[currentPixel + i] + factor * threshold);
 	}
 	// Get the color
-	//pixelColor = getClosest(pixelColor);
-	pixelColor = getIndex(pixelColor);
-	/*for (var i = 0; i < 3; i++)
-	{
-		imageData.data[currentPixel + i] = pixelColor[i];
-	}*/
+	if (colorMode == "index")
+		pixelColor = getIndex(pixelColor);
+	else
+		pixelColor = getClosest(pixelColor);
 	
 	// Put the caclulated colors into the scaled image data
 	var scaledPixel = (2 * (y * w * 8)) + x * 8;
@@ -228,6 +263,20 @@ function newSnap(source)
 	filmroll.insertBefore(img, filmroll.firstChild);
 }
 
+function toggleOptions()
+{
+	if (optionsPanel.style.visibility == "hidden")
+	{
+		optionsPanel.style.visibility = "visible";
+		optionsPanel.style.height = "auto";
+	}
+	else
+	{
+		optionsPanel.style.visibility = "hidden";
+		optionsPanel.style.height = "0px";
+	}
+}
+
 /* update function */
 function updateCamera(timestamp)
 {
@@ -276,6 +325,7 @@ function updateCamera(timestamp)
 function start() {
 	btnRecord.onclick = toggleRecord;
 	btnPicture.onclick = snap;
+	btnOpts.onclick = toggleOptions;
 	
     if ((typeof window === 'undefined') || (typeof navigator === 'undefined'))
 		alert('This page needs a Web browser with the objects window.* and navigator.*!');
