@@ -51,28 +51,31 @@ for (var i=0; i<256; i++) {
   lumB[i] = i*0.0722;*/
 }
 
+// RGB and minimum luminance
 var palette = [
-	[49, 74, 99],
-	[255, 99, 41],
-	[115,198,198],
-	[255, 214, 156]
+	[49, 74, 99, 0],
+	[255, 99, 41, 90],
+	[115,198,198, 135],
+	[255, 214, 156, 170]
 	];
 
 function getIndex(color)
 {
-	var luminance = Math.floor(lumR[color[0]] + lumG[color[1]] + lumB[color[2]]);	
-	/*var steps = 4;
-	var paletteIndex = Math.floor(Math.max(0, Math.min(steps, ((luminance / 255) * steps)) ));*/
+	var luminance = Math.floor(lumR[color[0]] + lumG[color[1]] + lumB[color[2]]);
 	var paletteIndex = 0;
-	if (luminance < 90)
-		paletteIndex = 0;
-	else if (luminance < 135)
-		paletteIndex = 1;
-	else if (luminance < 170)
-		paletteIndex = 2;
-	else
-		paletteIndex = 3;
-	return palette[paletteIndex];// [luminance,luminance,luminance];
+	var maxLum = 0;
+	for (var palIdx = 0; palIdx < palette.length; palIdx++)
+	{
+		var palLum = palette[palIdx][3];
+		if (luminance >= palLum && palLum > maxLum)
+		{
+			paletteIndex = palIdx;
+			maxLum = palLum;
+		}
+	}
+	return [palette[paletteIndex][0],
+			palette[paletteIndex][1],
+			palette[paletteIndex][2]];// [luminance,luminance,luminance];
 }
 
 function getClosest(color)
