@@ -1,9 +1,3 @@
-body
-{
-width: 300px;
-max-width: 300px;
-}
-
 #buffer, #video
 {
 display: none;
@@ -29,7 +23,7 @@ float: right;
 
 #options, #description, p
 {
-margin: 0 auto;
+margin: 1em auto;
 padding: 0;
 width: 256px;
 text-align: center
@@ -40,18 +34,12 @@ text-align: center
 visibility: hidden;
 clear: both;
 height: 0px;
-margin: 5px 0px;
 }
 
 #options p
 {
 text-align: left;
 padding-left: 20px;
-}
-
-#options button
-{
-margin: 0 -3px;
 }
 
 #filmroll

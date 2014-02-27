@@ -2,6 +2,7 @@
 <head>
 <title>Game Zie Camera</title>
 <link rel="stylesheet" type="text/css" href="style.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
 </head>
 
 <body>
@@ -21,10 +22,11 @@
 
 <div id="options">
 	<p>Dither<input id="threshold" type="range" min=1.0 max=10.0 value=6.0></input></p>
+	<p>Contrast<input id="contrast" type="range" min=0 max=256 value=128></input></p>
 	<p>Palette
-	<button type="button" onclick="swapPalette(0)">0</button>
-	<button type="button" onclick="swapPalette(1)">1</button>
-	<button type="button" onclick="swapPalette(2)">2</button>
+	<button type="button" onclick="swapPalette(0)">Pal 1</button>
+	<button type="button" onclick="swapPalette(1)">Pal 2</button>
+	<button type="button" onclick="swapPalette(2)">Pal 3</button>
 	</p>
 	<p><button type="button" onclick="toggleColorMode()">Color Mode</button></p>
 </div>

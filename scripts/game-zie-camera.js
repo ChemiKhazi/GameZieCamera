@@ -12,6 +12,7 @@ var buffer = document.getElementById('buffer');
 var bufferContext = buffer.getContext('2d');
 var videoStream = null;
 var thresholdControl = document.getElementById('threshold');
+var contrastControl = document.getElementById('contrast');
 
 var btnRecord = document.getElementById("record-button");
 var btnPicture = document.getElementById("picture-button");
@@ -28,6 +29,8 @@ var recordRendering = false
 
 var colorMode = "index";
 
+var sourceX, sourceY, sourceWidth, sourceHeight = 0;
+
 /*
 monochrome code partially from
 https://github.com/meemoo/iframework/blob/gh-pages/src/nodes/image-monochrome-worker.js
@@ -37,10 +40,18 @@ var bayerThresholdMap = [
 	[ 13,  5, 15,  7 ],
 	[  4, 12,  2, 10 ],
 	[ 16,  8, 14,  6 ]*/
-	[ 0, 12, 3, 15],
+/*	[ 0, 12, 3, 15],
 	[ 8, 4, 11, 7],
 	[ 2, 14, 1, 13],
-	[ 10, 6, 9, 5]
+	[ 10, 6, 9, 5]*/
+	[ 0, 6, 1, 7],
+	[ 4, 2, 5, 3],
+	[ 1, 7, 1, 6],
+	[ 5, 3, 4, 2]
+/*	[ 0, 8, 2, 10],
+	[12, 4, 14, 6],
+	[3, 11, 1, 9],
+	[15, 7, 13, 5]*/
 ];
 
 var lumR = [];
@@ -50,9 +61,6 @@ for (var i=0; i<256; i++) {
   lumR[i] = i*0.299;
   lumG[i] = i*0.587;
   lumB[i] = i*0.114;
-  /*lumR[i] = i*0.2126;
-  lumG[i] = i*0.7152;
-  lumB[i] = i*0.0722;*/
 }
 
 // RGB and minimum luminance
@@ -64,6 +72,12 @@ var palette = [
 	];
 	
 var paletteChoices = [
+	[
+	[90, 57, 33, 0],
+	[107, 140, 66, 90],
+	[123,198,123, 135],
+	[255, 222, 181, 170]
+	],
 	[
 	[49, 74, 99, 0],
 	[255, 99, 41, 90],
@@ -113,7 +127,7 @@ function getIndex(color)
 	}
 	return [palette[paletteIndex][0],
 			palette[paletteIndex][1],
-			palette[paletteIndex][2]];// [luminance,luminance,luminance];
+			palette[paletteIndex][2]];
 }
 
 function getClosest(color)
@@ -157,7 +171,11 @@ function processImage(imageData, threshold)
 	var pixelColor = [];
 	for (var i = 0; i < 3; i++)
 	{
-		pixelColor[i] = Math.min(255, imageData.data[currentPixel + i] + factor * threshold);
+		// Run the contrast function first
+		pixelColor[i] = imageData.data[currentPixel + i] + (contrastControl.value - 128);
+		pixelColor[i] = Math.max(0, Math.min(255, pixelColor[i]));
+		// Then run dither
+		pixelColor[i] = Math.min(255, pixelColor[i] + factor * threshold);
 	}
 	// Get the color
 	if (colorMode == "index")
@@ -192,6 +210,23 @@ end monochrome code
 */
 
 /* Camera handling */
+function getCameraSize()
+{
+	// Figure out the part of the video we need to grab;
+	sourceWidth = gbWidth * 3.5;
+	sourceHeight = gbHeight * 3.5;
+	
+	if (sourceWidth > video.videoWidth)
+	{
+		var targetHeightRatio = gbHeight/gbWidth;
+		sourceWidth = video.videoWidth;
+		souceHeight = Math.floor(video.videoWidth * targetHeightRatio);
+	}
+	
+	sourceX = Math.floor((video.videoWidth/2) - (sourceWidth/2));
+	sourceY = Math.floor((video.videoHeight/2) - (sourceHeight/2));
+}
+
 function noStream() {
     alert('Access to camera was denied!');
 }
@@ -202,6 +237,7 @@ function gotStream(stream)
 	buffer.height = gbHeight;
 	canvas.width = gbWidth * 2;
 	canvas.height = gbHeight * 2;
+	
     videoStream = stream;
     video.onerror = function () {
         alert('video.onerror');
@@ -280,21 +316,9 @@ function toggleOptions()
 /* update function */
 function updateCamera(timestamp)
 {
-	// Figure out the part of the video we need to grab
-	var sourceX, sourceY, sourceWidth, sourceHeight = 0;
-	sourceWidth = gbWidth * 3.5;
-	sourceHeight = gbHeight * 3.5;
+	getCameraSize();
 	
-	if (sourceWidth > video.videoWidth)
-	{
-		var targetHeightRatio = gbHeight/gbWidth;
-		sourceWidth = video.videoWidth;
-		souceHeight = Math.floor(video.videoWidth * targetHeightRatio);
-	}
-	
-	sourceX = Math.floor((video.videoWidth/2) - (sourceWidth/2));
-	sourceY = Math.floor((video.videoHeight/2) - (sourceHeight/2));
-	// Copy that part of the video to the buffer context
+	// Copy part of the video to the buffer context
 	bufferContext.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, gbWidth, gbHeight);
 	var imageData = bufferContext.getImageData(0, 0, gbWidth, gbHeight);
 	// Run the buffer through the monochrome code
@@ -326,6 +350,7 @@ function start() {
 	btnRecord.onclick = toggleRecord;
 	btnPicture.onclick = snap;
 	btnOpts.onclick = toggleOptions;
+	contrastControl.value = 128;
 	
     if ((typeof window === 'undefined') || (typeof navigator === 'undefined'))
 		alert('This page needs a Web browser with the objects window.* and navigator.*!');
