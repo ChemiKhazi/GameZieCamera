@@ -1,0 +1,9 @@
+body
+{
+	background: #DDD;
+}
+
+textarea {
+	min-height: 20em;
+	width: 48%;
+}
