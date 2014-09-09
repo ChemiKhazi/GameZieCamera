@@ -6,4 +6,9 @@ body
 textarea {
 	min-height: 20em;
 	width: 48%;
+	display: none;
+}
+
+video, #videoCanvas {
+	display: none;
 }

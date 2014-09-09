@@ -9,7 +9,8 @@
 <body>
 
 <div id="display">
-	
+	<video autoplay="true"></video>
+	<canvas id="videoCanvas"></canvas>
 </div>
 
 <div id="shaders">
@@ -41,7 +42,11 @@ void main() {
 
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.js"></script>
 
+<script src="vidstream.js"></script>
 <script src="camera.js"></script>
+<script type="text/javascript">
+	document.addEventListener('DOMContentLoaded', $VidStream.init, false);
+</script>
 
 </body>
 
