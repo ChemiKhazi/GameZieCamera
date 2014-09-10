@@ -9,23 +9,17 @@ var $GzCam = {
 		$GzCam.scene = new THREE.Scene();
 		$GzCam.camera = new THREE.OrthographicCamera(-$GzCam.sizeH, $GzCam.sizeH, $GzCam.sizeH, -$GzCam.sizeH, 1, 1);
 
-		// if ( $GzCam.webGl() )
-		// 	$GzCam.renderer = new THREE.WebGLRenderer( {antialias:true} );
-		// else
-		// 	$GzCam.renderer = new THREE.CanvasRenderer();
-		$GzCam.renderer = new THREE.WebGLRenderer( {antialias:true} );
-
+		if ( $GzCam.webGl() )
+			$GzCam.renderer = new THREE.WebGLRenderer( {antialias:true} );
+		else
+			$GzCam.renderer = new THREE.CanvasRenderer();
 		$GzCam.renderer.setSize($GzCam.size, $GzCam.size);
 
-		// $GzCam.material = new THREE.ShaderMaterial({
-		// 	vertexShader: document.getElementById('vtx').textContent,
-		// 	fragmentShader: document.getElementById('frg').textContent
-		// })
-		$GzCam.material = new THREE.MeshBasicMaterial({
-			map: $VidStream.texture,
-			overdraw: true,
-			side: THREE.DoubleSide
-		});
+		// Setup a default material
+		$GzCam.material = new THREE.ShaderMaterial({
+			vertexShader: document.getElementById('vtx').textContent,
+			fragmentShader: document.getElementById('frg').textContent
+		})
 
 		var geometry = new THREE.PlaneGeometry($GzCam.size, $GzCam.size);
 		$GzCam.mesh = new THREE.Mesh(geometry, $GzCam.material);
@@ -35,6 +29,14 @@ var $GzCam = {
 		$GzCam.camera.position.z = 1;
 
 		$GzCam.render();
+	},
+	setupMaterial: function(){
+		$GzCam.material = new THREE.MeshBasicMaterial({
+			map: $VidStream.texture,
+			overdraw: true,
+			side: THREE.DoubleSide
+		});
+		$GzCam.mesh.material = $GzCam.material;
 	},
 	render: function(timestamp) {
 		requestAnimationFrame($GzCam.render);
