@@ -5,44 +5,52 @@ var $GzCam = {
 		return ( function () { try { return !! window.WebGLRenderingContext && !! document.createElement( 'canvas' ).getContext( 'experimental-webgl' ); } catch( e ) { return false; } } )();
 	},
 	init: function(){
-		console.log("Init GameZieCamera");
-		$GzCam.scene = new THREE.Scene();
-		$GzCam.camera = new THREE.OrthographicCamera(-$GzCam.sizeH, $GzCam.sizeH, $GzCam.sizeH, -$GzCam.sizeH, 1, 1);
+		// console.log("Init GameZieCamera");
 
+        // Setup the scene
+		$GzCam.scene = new THREE.Scene();
+
+		// Setup camera
+		$GzCam.camera = new THREE.OrthographicCamera(-$GzCam.sizeH, $GzCam.sizeH,
+													$GzCam.sizeH, -$GzCam.sizeH,
+													1, 1000);
+		$GzCam.scene.add($GzCam.camera);
+		$GzCam.camera.position.z = 1;
+
+		// Setup renderer
 		if ( $GzCam.webGl() )
 			$GzCam.renderer = new THREE.WebGLRenderer( {antialias:true} );
 		else
 			$GzCam.renderer = new THREE.CanvasRenderer();
 		$GzCam.renderer.setSize($GzCam.size, $GzCam.size);
+		document.getElementById('display').appendChild($GzCam.renderer.domElement);
 
-		// Setup a default material
+        // Setup the video texture
+		$GzCam.videoTexture = new THREE.Texture( $VidStream.canvas );
+		$GzCam.videoTexture.minFilter = THREE.NearestFilter;
+		$GzCam.videoTexture.magFilter = THREE.NearestFilter;
+
+		// Setup material material
 		$GzCam.material = new THREE.ShaderMaterial({
-			vertexShader: document.getElementById('vtx').textContent,
-			fragmentShader: document.getElementById('frg').textContent
-		})
+			uniforms: {
+				baseTexture : { type: 't', value: $GzCam.videoTexture }
+			},
+			vertexShader: document.querySelector('#vtx').innerHTML,
+			fragmentShader: document.querySelector('#frg').innerHTML
+		});
 
 		var geometry = new THREE.PlaneGeometry($GzCam.size, $GzCam.size);
 		$GzCam.mesh = new THREE.Mesh(geometry, $GzCam.material);
+		$GzCam.mesh.position.set(0,0,0);
 		$GzCam.scene.add($GzCam.mesh);
 
-		document.getElementById('display').appendChild($GzCam.renderer.domElement);
-		$GzCam.camera.position.z = 1;
-
 		$GzCam.render();
-	},
-	setupMaterial: function(){
-		$GzCam.material = new THREE.MeshBasicMaterial({
-			map: $VidStream.texture,
-			overdraw: true,
-			side: THREE.DoubleSide
-		});
-		$GzCam.mesh.material = $GzCam.material;
 	},
 	render: function(timestamp) {
 		requestAnimationFrame($GzCam.render);
 
-		$VidStream.copyToCanvas();
-
+		if ($VidStream.copyToCanvas($GzCam.context))
+			$GzCam.videoTexture.needsUpdate = true;
 		$GzCam.renderer.render($GzCam.scene, $GzCam.camera);
 	}
 }

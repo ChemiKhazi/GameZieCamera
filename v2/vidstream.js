@@ -4,15 +4,20 @@ var $VidStream = {
     context: null,
     texture: null,
     init: function(){
-        console.log("Init Video Stream");
+        // console.log("Init Video Stream");
         $VidStream.video = document.querySelector('video');
+
         $VidStream.canvas = document.querySelector('#videoCanvas');
+        // Set size of the video canvas
+        $VidStream.canvas.width = $VidStream.canvas.height = $GzCam.sizeH;
+
+        $VidStream.context = $VidStream.canvas.getContext('2d');
+        // Fill canvas with black
+        $VidStream.context.fillStyle = '#000000';
+        $VidStream.context.fillRect( 0, 0, $GzCam.sizeH, $GzCam.sizeH );
 
         if ((typeof window === 'undefined') || (typeof navigator === 'undefined')) {
             alert('This page needs a Web browser with the objects window.* and navigator.*!');
-        }
-        else if (!($VidStream.video && $VidStream.canvas)) {
-            alert('HTML context error!');
         }
         else {
 
@@ -27,47 +32,28 @@ var $VidStream = {
         }
     },
     setupContext: function(){
-        // console.log("Setup context");
+        console.log("Setup context");
         $VidStream.video.removeEventListener('playing', $VidStream.setupContext);
 
-        // Setup the size of the video element, which can be non square
-        var minFactor = Math.min($VidStream.video.videoWidth, $VidStream.video.videoHeight);
-        $VidStream.minVid = minFactor;
-        $VidStream.video.width = $GzCam.sizeH * ($VidStream.video.videoWidth / minFactor);
-        $VidStream.video.height = $GzCam.sizeH * ($VidStream.video.videoHeight / minFactor);
-
-        // Then the size of the canvas element, which is square
-        $VidStream.canvas.width = $VidStream.canvas.height = $GzCam.sizeH;
-
-        // Temporarily fill canvas with black
-        $VidStream.context = $VidStream.canvas.getContext('2d');
-        $VidStream.context.fillStyle = '#000';
-        $VidStream.context.fillRect( 0, 0, $GzCam.sizeH, $GzCam.sizeH );
-
-        // Setup the THREE.js texture
-        $VidStream.texture = new THREE.Texture( $VidStream.canvas );
-        $VidStream.texture.minFilter = THREE.NearestFilter;
-        $VidStream.texture.magFilter = THREE.NearestFilter;
+        // Find smallest size of the video
+        $VidStream.minVid = Math.min($VidStream.video.videoWidth, $VidStream.video.videoHeight);
 
         // Setup the region of the video element that needs to be copied to canvas
         $VidStream.copyPos = [0,0];
-        if ($VidStream.video.width > $GzCam.sizeH)
-            $VidStream.copyPos[0] = Math.round(($VidStream.video.width - $GzCam.sizeH) / 2);
-        if ($VidStream.video.height > $GzCam.sizeH)
-            $VidStream.copyPos[1] = Math.round(($VidStream.video.height - $GzCam.sizeH) / 2);
-
-        // Call setup material on GzCam
-        $GzCam.setupMaterial();
+        if ($VidStream.video.videoWidth > $VidStream.minVid)
+            $VidStream.copyPos[0] = Math.round(($VidStream.video.videoWidth - $VidStream.minVid) / 2);
+        if ($VidStream.video.videoHeight > $VidStream.minVid)
+            $VidStream.copyPos[1] = Math.round(($VidStream.video.videoHeight - $VidStream.minVid) / 2);
     },
-    copyToCanvas: function(){
-        if ($VidStream.context === null || $VidStream.video.readyState !== $VidStream.video.HAVE_ENOUGH_DATA )
-            return;
+    copyToCanvas: function(context){
+        if ($VidStream.copyPos === undefined && $VidStream.video.readyState !== $VidStream.video.HAVE_ENOUGH_DATA )
+            return false;
         // Copy the video over to the context
         $VidStream.context.drawImage($VidStream.video,
-                                    $VidStream.copyPos[0],$VidStream.copyPos[1],
-                                    $VidStream.minVid, $VidStream.minVid,
-                                    0, 0, 128, 128);
-        $VidStream.texture.needsUpdate = true;
+                        $VidStream.copyPos[0],$VidStream.copyPos[1],
+                        $VidStream.minVid, $VidStream.minVid,
+                        0, 0, 128, 128);
+        return true;
     },
     fetchSources: function(sourceInfos) {
         // console.log("FetchSources");
@@ -97,7 +83,7 @@ var $VidStream = {
         $VidStream.fetchStream(0);
     },
     fetchStream: function(sourceIndex){
-        console.log("fetchStream " + sourceIndex);
+        // console.log("fetchStream " + sourceIndex);
         // Default parameters if no source info
         var parameters = {
             video: true,
@@ -113,7 +99,7 @@ var $VidStream = {
         navigator.getUserMedia(parameters, $VidStream.gotStream, $VidStream.noStream);
     },
     gotStream: function(stream){
-        console.log("gotStream");
+        // console.log("gotStream");
         $VidStream.videoStream = stream;
 
         // Setup event for error or end of video stream
@@ -122,7 +108,6 @@ var $VidStream = {
         };
         stream.onended = $VidStream.noStream;
 
-        $VidStream.context = null;
         $VidStream.video.addEventListener('playing', $VidStream.setupContext);
 
         if (window.webkitURL) {

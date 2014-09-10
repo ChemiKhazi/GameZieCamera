@@ -1,43 +1,37 @@
 <html>
 <head>
-
-<title>Game Zie Camera</title>
-<link rel="stylesheet" type="text/css" href="style.css" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+	<title>Game Zie Camera</title>
+	<link rel="stylesheet" type="text/css" href="style.css" />
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 </head>
 
 <body>
 
 <div id="display">
 	<video autoplay="true"></video>
-	<canvas id="videoCanvas"></canvas>
+	<canvas id="videoCanvas" width="128" height="128"></canvas>
 </div>
 
 <div id="shaders">
-<textarea id="vtx">
-/**
- * Multiply each vertex by the model-view matrix
- * and the projection matrix (both provided by
- * Three.js) to get a final vertex position
- */
+<script id="vtx" type="x-shader/x-vertex">
+varying vec2 vUv;
 void main() {
+	vUv = uv;
     gl_Position = projectionMatrix *
                   modelViewMatrix *
                   vec4(position,1.0);
 } 
-</textarea>
+</script>
 
-<textarea id="frg">
-/**
- * Set the colour to a lovely pink.
- * Note that the color is a 4D Float
- * Vector, R,G,B and A and each part
- * runs from 0.0 to 1.0
- */
+<script id="frg" type="x-shader/x-fragment">
+uniform sampler2D baseTexture;
+varying vec2 vUv;
 void main() {
-    gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+    gl_FragColor = texture2D( baseTexture, vUv );
 }
-</textarea>
+</script>
+
 </div>
 
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.js"></script>
