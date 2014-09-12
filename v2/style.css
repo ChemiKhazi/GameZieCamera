@@ -3,12 +3,11 @@ body
 	background: #DDD;
 }
 
-textarea {
-	min-height: 20em;
-	width: 48%;
+video, #videoCanvas {
 	display: none;
 }
 
-video, #videoCanvas {
-	display: none;
+#display, #controls {
+	margin: 50px auto;
+	width: 256px;
 }

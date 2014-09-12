@@ -3,6 +3,7 @@ var $VidStream = {
     canvas: null,
     context: null,
     texture: null,
+    currentStream: -1,
     init: function(){
         // console.log("Init Video Stream");
         $VidStream.video = document.querySelector('video');
@@ -52,7 +53,7 @@ var $VidStream = {
         $VidStream.context.drawImage($VidStream.video,
                         $VidStream.copyPos[0],$VidStream.copyPos[1],
                         $VidStream.minVid, $VidStream.minVid,
-                        0, 0, 128, 128);
+                        0, 0, $GzCam.sizeH, $GzCam.sizeH);
         return true;
     },
     fetchSources: function(sourceInfos) {
@@ -77,6 +78,7 @@ var $VidStream = {
                 if (sourceInfo.kind === "video")
                 {
                     $VidStream.sources[$VidStream.sources.length] = sourceInfo.id;
+                    console.log(sourceInfo);
                 }
             }
         }
@@ -94,36 +96,35 @@ var $VidStream = {
         if ($VidStream.sources.length > 0)
         {
             parameters.video = {optional: [{sourceId: $VidStream.sources[sourceIndex]}] };
+            $VidStream.currentStream = sourceIndex;
         }
 
         navigator.getUserMedia(parameters, $VidStream.gotStream, $VidStream.noStream);
     },
+    toggleStream: function(){
+        if ($VidStream.sources.length == 0)
+            return;
+
+        var newSource = $VidStream.currentStream;
+        newSource++;
+        if(newSource >= $VidStream.sources.length)
+            newSource = 0;
+
+        $VidStream.video.pause();
+        $VidStream.video.src = null;
+        $VidStream.videoStream.stop();
+        $VidStream.fetchStream(newSource);
+    },
     gotStream: function(stream){
-        // console.log("gotStream");
+        console.log("gotStream");
         $VidStream.videoStream = stream;
 
-        // Setup event for error or end of video stream
-        $VidStream.video.onerror = function () {
-            alert('video.onerror');
-        };
-        stream.onended = $VidStream.noStream;
-
         $VidStream.video.addEventListener('playing', $VidStream.setupContext);
-
-        if (window.webkitURL) {
-            $VidStream.video.src = window.webkitURL.createObjectURL(stream);
-        } else if (video.mozSrcObject !== undefined) { //FF18a
-            $VidStream.video.mozSrcObject = stream;
-        } else if (navigator.mozGetUserMedia) { //FF16a, 17a
-            $VidStream.video.src = stream;
-        } else if (window.URL) {
-            $VidStream.video.src = window.URL.createObjectURL(stream);
-        } else {
-            $VidStream.video.src = stream;
-        }
+        $VidStream.video.src = window.URL.createObjectURL(stream);
         $VidStream.video.play();
     },
-    noStream: function() {
-        alert('Access to camera was denied!');
+    noStream: function(errorMsg) {
+        console.log(errorMsg);
+        alert('Access to camera was denied! ' + errorMsg);
     }
 }
