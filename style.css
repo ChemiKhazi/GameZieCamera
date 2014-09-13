@@ -1,0 +1,61 @@
+#buffer, #video
+{
+display: none;
+}
+
+#view, #control-panel
+{
+margin: 1em auto;
+padding: 0;
+width: 256px;
+text-align: center;
+}
+
+#show-opts-button
+{
+float: left;
+}
+
+#picture-button, #record-button
+{
+float: right;
+}
+
+#options, #description, p
+{
+margin: 1em auto;
+padding: 0;
+width: 256px;
+text-align: center
+}
+
+#options
+{
+visibility: hidden;
+clear: both;
+height: 0px;
+}
+
+#options p
+{
+text-align: left;
+padding-left: 20px;
+}
+
+#filmroll
+{
+margin: 0 auto;
+padding: 0;
+width: 276px;
+text-align: center;
+max-height: 510px;
+min-height: 120px;
+overflow-y: auto;
+overflow-x: hidden;
+}
+
+#filmroll img
+{
+	padding: 5px 10px;
+	display: inline;
+}

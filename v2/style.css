@@ -1,0 +1,13 @@
+body
+{
+	background: #DDD;
+}
+
+video, #videoCanvas {
+	display: none;
+}
+
+#display, #controls {
+	margin: 50px auto;
+	width: 256px;
+}
