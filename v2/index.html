@@ -11,20 +11,42 @@
 <div id="display">
 	<div id="setting-controls">
 		<input type="button" id="toggle-fullscreen" />
-		<input type="button" id="toggle-hand" />
-		<input type="button" id="toggle-source" />
 	</div>
 
 	<video autoplay="true"></video>
 	<canvas id="videoCanvas" width="128" height="128"></canvas>
 </div>
 
+<div id="control-panel">
+	<div id="options">
+		<div data-rel="threshold">
+			<label for="threshold">Dither</label>
+			<input id="threshold" type="range" min=1.0 max=10.0 />
+		</div>
+		<div data-rel="contrast">
+			<label for="contrast">Contrast</label>
+			<input id="contrast" type="range" min=-5 max=5.0 />
+		</div>
+		<input id="leave-options" type="button" value="Back" />
+	</div>
 
-<div id="setting-panel">
+	<div id="palette">
+	</div>
+
+	<div id="dpad-settings">
+		<div>
+			<input type="button" id="toggle-settings" />
+			<input type="button" id="toggle-palette" />
+			<input type="button" id="toggle-source" />
+		</div>
+	</div>
+
+	<div id="controls">
+		<input type="button" id="snap" class="btn-main"/>
+	</div>
 </div>
 
-<div id="controls">
-	<input type="button" id="snap" class="btn-main"/>
+<div id="filmroll">
 </div>
 
 <div id="shaders">
@@ -42,56 +64,65 @@
 	uniform sampler2D baseTexture;
 	uniform sampler2D ditherTexture;
 	uniform vec2 resolution;
+	uniform vec3 pal1;
+	uniform vec3 pal2;
+	uniform vec3 pal3;
+	uniform vec3 pal4;
+	uniform vec2 setting;
 	varying vec2 vUv;
+	const vec3 lumFactor = vec3(0.2125, 0.7154, 0.0721);
+
+	float lum(vec3 color)
+	{
+		return dot(color, lumFactor);
+	}
 
 	void main() {
-		// vec4 colour = texture2D( baseTexture, vUv );
-		// int x = int(mod((vUv.x * resolution.x), 2.0));
-		// int y = int(mod((vUv.y * resolution.y), 2.0));
 
-		// // Set out 8x8 bayer matrix
-		// int dither[8][8] = {
-		// { 0, 32, 8, 40, 2, 34, 10, 42},
-		// {48, 16, 56, 24, 50, 18, 58, 26},
-		// {12, 44, 4, 36, 14, 46, 6, 38},
-		// {60, 28, 52, 20, 62, 30, 54, 22},
-		// { 3, 35, 11, 43, 1, 33, 9, 41},
-		// {51, 19, 59, 27, 49, 17, 57, 25},
-		// {15, 47, 7, 39, 13, 45, 5, 37},
-		// {63, 31, 55, 23, 61, 29, 53, 21}
-		// };
+		vec3 sourcePixel = texture2D(baseTexture, vUv).rgb;
 
-		// // Set our selection adjustment.
-		// // In practice, higher numbers result in darker return colours
-		// float selectionAdjustment = 128;
-		// float limit = (dither[x][y]+1)/selectionAdjustment;
+		// Contrast
+		sourcePixel = clamp(sourcePixel + vec3(setting.x, setting.x, setting.x), vec3(0,0,0), vec3(1,1,1));
 
-		// // Gamma adjustment
-		// // Can alter individual colour channels if necessary
-		// // For the gameboy palette, universal adjustment works well
-		// float gammaAdjustmentR = 1.5;
-		// float gammaAdjustmentG = 1.5;
-		// float gammaAdjustmentB = 1.5;
+		vec3 bayerMap = texture2D(ditherTexture, vec2(mod(gl_FragCoord.xy/resolution.xy,1.0))).rgb;
+		
+		// Dither
+		vec3 dither = vec3(bayerMap.z, bayerMap.z, bayerMap.z) * setting.y;
+		vec3 colorDither = clamp(sourcePixel + dither, vec3(0,0,0), vec3(1,1,1));
 
-		// // Adjust our final pixel colours, taking our threshold into consideration
-		// colour.x = (colour.x + limit)/gammaAdjustmentR;
-		// colour.y = (colour.y + limit)/gammaAdjustmentG;
-		// colour.z = (colour.z + limit)/gammaAdjustmentB;
-		// gl_FragColor = colour;
+	    // Find the closest palette colour
+		float d1 = abs(lum(colorDither) - lum(pal1));
+		float d2 = abs(lum(colorDither) - lum(pal2));
+		float d3 = abs(lum(colorDither) - lum(pal3));
+		float d4 = abs(lum(colorDither) - lum(pal4));
 
-	    gl_FragColor = texture2D( baseTexture, vUv );
+	    float minValue = min(d1, min(d2, min(d3, d4)));
+	 
+	   // Figure out which palette colour we need and return it
+	    if (minValue == d1)
+	    	colorDither = pal1;
+	    else if (minValue == d2)
+	        colorDither = pal2;
+	    else if (minValue == d3)
+	        colorDither = pal3;
+	    else
+	        colorDither= pal4;
+
+	    gl_FragColor = vec4(colorDither.r, colorDither.g, colorDither.b, 1);
 	}
 	</script>
 </div>
 
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.js"></script>
+<script type="text/javascript" src="three.min.js"></script>
 <script type="text/javascript" src="screenfull.min.js"></script>
-<script src="vidstream.js"></script>
-<script src="camera.js"></script>
+<script type="text/javascript" src="morpheus.min.js"></script>
+<script type="text/javascript" src="vidstream.js"></script>
+<script type="text/javascript" src="camera.js"></script>
 <script type="text/javascript" src="ui-cam.js"></script>
 <script type="text/javascript">
 	document.addEventListener('DOMContentLoaded', $VidStream.init, false);
 	document.addEventListener('DOMContentLoaded', $GzCam.init, false);
+	document.addEventListener('DOMContentLoaded', $CamUI.init, false);
 </script>
 
 </body>
