@@ -51,5 +51,3 @@ $CamUI = {
 			$CamUI.startVals[element.id] = window.getComputedStyle(element)[styleName];
 	}
 }
-
-$CamUI.init();
