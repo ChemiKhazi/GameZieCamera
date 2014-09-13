@@ -78,7 +78,6 @@ var $VidStream = {
                 if (sourceInfo.kind === "video")
                 {
                     $VidStream.sources[$VidStream.sources.length] = sourceInfo.id;
-                    console.log(sourceInfo);
                 }
             }
         }

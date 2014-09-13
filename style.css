@@ -1,61 +1,152 @@
-#buffer, #video
-{
-display: none;
+html {
+	width: 100%;
+	background: #c3bdbf;
 }
 
-#view, #control-panel
-{
-margin: 1em auto;
-padding: 0;
-width: 256px;
-text-align: center;
+body {
+	width: 384px;
+	overflow-x: hidden;
+	margin: 0px auto;
+	position: relative;
 }
 
-#show-opts-button
-{
-float: left;
+video, #videoCanvas {
+	display: none;
 }
 
-#picture-button, #record-button
-{
-float: right;
+#display {
+	width: 384px;
+	height: 352px;
+	margin: 20px auto 0;
+	background: url('images/coverplate.png') top left no-repeat;
+	position: relative;
 }
 
-#options, #description, p
-{
-margin: 1em auto;
-padding: 0;
-width: 256px;
-text-align: center
+#display :last-child {
+	width: 256px;
+	height: 256px;
+	position: relative;
+	top: 38px;
+	left: 64px;
+}
+#setting-controls {
+	position: absolute;
+	top: 120px;
+	left: 25px;
 }
 
-#options
-{
-visibility: hidden;
-clear: both;
-height: 0px;
+#setting-controls #toggle-fullscreen {
+	width: 28px;
+	height: 30px;
+	border: none;
+	display: block;
+	position: relative;
+	left: 0px;
+	top: 0px;
+	background: url('images/fullscreen-label.png') 0 0 no-repeat,
+				url('images/settingsbutton.png') 0 0 no-repeat;
 }
 
-#options p
-{
-text-align: left;
-padding-left: 20px;
+#control-panel {
+	position: relative;
+	width: 100%;
+	height: 150px;
+	overflow: hidden;
 }
 
-#filmroll
-{
-margin: 0 auto;
-padding: 0;
-width: 276px;
-text-align: center;
-max-height: 510px;
-min-height: 120px;
-overflow-y: auto;
-overflow-x: hidden;
+#controls {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+}
+#controls input[type=button] {
+	width: 64px;
+	height: 64px;
+	background: url('images/mainbutton.png');
+	border: none;
 }
 
-#filmroll img
-{
-	padding: 5px 10px;
-	display: inline;
+#dpad-settings {
+	position: absolute;
+	top: 0;
+	left: 30px;
+	width: 114px;
+	height: 116px;
+	background: url('images/dpad.png') no-repeat;
+}
+#dpad-settings>div { position: relative;}
+#dpad-settings input[type=button] {
+	width: 28px;
+	height: 30px;
+	position: absolute;
+	border: none;
+}
+#toggle-settings {
+	background: url('images/camera-label.png') 0 0 no-repeat;
+	top: 0px;
+	left: 44px;
+}
+#toggle-source {
+	background: url('images/source-label.png') 0 0 no-repeat;
+	right: 0px;
+	top: 44px;
+}
+#toggle-palette {
+	background: url('images/palette-label.png') 0 0 no-repeat;
+	left: 0px;
+	top: 44px;
+}
+
+#options {
+	display: block;
+	position: absolute;
+	top: 15px;
+	left: -180px;
+	width: 130px;
+}
+#options label { display: none;  }
+#options input { width: 100%; }
+#options div {
+	display: block;
+	width: 100%;
+	transform: rotate(-15deg);
+	margin: 0 0 30px 0px;
+	padding-top: 15px;
+}
+div[data-rel="threshold"] {
+	background: url('images/label-dither.png') no-repeat;
+}
+div[data-rel="contrast"] {
+	background: url('images/label-contrast.png') no-repeat;
+}
+#options input[type=button]{
+	position: absolute;
+	left: 90px;
+	top: 40px;
+	transform: rotate(-90deg);
+}
+
+:focus  {
+	outline: none;
+}
+
+#filmroll {
+	width: 300px;
+	height: 512px;
+	margin: 0 auto;
+	overflow-y: auto;
+	border: 10px solid #5a595f;
+	background: #5a595f;
+	text-align: center;
+	position: relative;
+}
+
+#filmroll img {
+	margin-bottom: 10px;
+	position: relative !important;
+}
+
+#filmroll img:first-child {
+	position: absolute;
+	top: -50px;
 }
