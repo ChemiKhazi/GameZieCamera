@@ -6,15 +6,25 @@
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 </head>
 
-<body>
+<body id="hand-left">
 
 <div id="display">
+	<div id="setting-controls">
+		<input type="button" id="toggle-fullscreen" />
+		<input type="button" id="toggle-hand" />
+		<input type="button" id="toggle-source" />
+	</div>
+
 	<video autoplay="true"></video>
 	<canvas id="videoCanvas" width="128" height="128"></canvas>
 </div>
 
+
+<div id="setting-panel">
+</div>
+
 <div id="controls">
-<input type="button" value="Change Source" id="toggle-source" />
+	<input type="button" id="snap" class="btn-main"/>
 </div>
 
 <div id="shaders">
@@ -75,14 +85,13 @@
 </div>
 
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.js"></script>
-
+<script type="text/javascript" src="screenfull.min.js"></script>
 <script src="vidstream.js"></script>
 <script src="camera.js"></script>
+<script type="text/javascript" src="ui-cam.js"></script>
 <script type="text/javascript">
 	document.addEventListener('DOMContentLoaded', $VidStream.init, false);
 	document.addEventListener('DOMContentLoaded', $GzCam.init, false);
-
-	document.querySelector('#toggle-source').addEventListener('click', $VidStream.toggleStream, false);
 </script>
 
 </body>

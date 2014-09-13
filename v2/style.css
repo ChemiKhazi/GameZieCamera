@@ -1,13 +1,80 @@
-body
-{
+html, body {
 	background: #DDD;
+	width: 384px;
+	overflow-x: hidden;
+	margin: 0px auto;
+	position: relative;
 }
 
 video, #videoCanvas {
 	display: none;
 }
 
-#display, #controls {
-	margin: 50px auto;
+#display {
+	width: 384px;
+	height: 352px;
+	margin: 20px auto 0;
+	background: url('images/coverplate.png') top left no-repeat;
+	position: relative;
+}
+
+#display :last-child {
 	width: 256px;
+	height: 256px;
+	position: relative;
+	top: 38px;
+	left: 64px;
+}
+#setting-controls {
+	position: absolute;
+	top: 48px;
+}
+#hand-left #setting-controls{ left: 25px; }
+#hand-right #setting-controls { left: 330px; }
+
+#setting-controls input[type=button] {
+	width: 28px;
+	height: 30px;
+	border: none;
+	display: block;
+	position: relative;
+	left: 0px;
+	top: 0px;
+	margin-bottom: 35px;
+}
+
+#toggle-source {
+	background: url('images/source-label.png') 0 0 no-repeat,
+				url('images/settingsbutton.png') 0 0 no-repeat;
+}
+#toggle-fullscreen {
+	background: url('images/fullscreen-label.png') 0 0 no-repeat,
+				url('images/settingsbutton.png') 0 0 no-repeat;
+}
+#hand-left #toggle-hand {
+	background: url('images/hand-r-label.png') 0 0 no-repeat,
+				url('images/settingsbutton.png') 0 0 no-repeat;
+}
+#hand-right #toggle-hand {
+	background: url('images/hand-l-label.png') 0 0 no-repeat,
+				url('images/settingsbutton.png') 0 0 no-repeat;
+}
+
+#controls {
+	position: absolute;
+	top: 365px;
+}
+
+#hand-left #controls { left: 20px; }
+#hand-right #controls { right: 20px; }
+
+#controls input[type=button] {
+	width: 100px;
+	height: 100px;
+	background: url('images/mainbutton.png');
+	border: none;
+}
+
+:focus  {
+	outline: none;
 }
