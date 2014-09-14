@@ -1,10 +1,11 @@
 html {
 	width: 100%;
-	background: #c3bdbf;
+	background: #000;
 }
 
 body {
 	width: 384px;
+	background: #c3bdbf;
 	overflow-x: hidden;
 	margin: 0px auto;
 	position: relative;
@@ -12,6 +13,17 @@ body {
 
 video, #videoCanvas {
 	display: none;
+}
+
+#main {
+	background:
+		url('images/border-top-left.png') top left no-repeat,
+		url('images/border-top-right.png') top right no-repeat,
+		url('images/bottom.png') no-repeat bottom,
+		url('images/border-top.png') repeat-x,
+		url('images/border-side.png') repeat-y,
+		url('images/border-side.png') repeat-y right;
+	padding-top: 10px;
 }
 
 #display {
@@ -56,7 +68,7 @@ video, #videoCanvas {
 
 #controls {
 	position: absolute;
-	top: 20px;
+	top: 0px;
 	right: 20px;
 }
 #controls input[type=button] {
@@ -109,9 +121,8 @@ video, #videoCanvas {
 #options div {
 	display: block;
 	width: 100%;
-	transform: rotate(-15deg);
-	margin: 0 0 30px 0px;
-	padding-top: 15px;
+	margin: 0 0 10px 0px;
+	padding-top: 10px;
 }
 div[data-rel="threshold"] {
 	background: url('images/label-dither.png') no-repeat;
@@ -121,9 +132,10 @@ div[data-rel="contrast"] {
 }
 #options input[type=button]{
 	position: absolute;
-	left: 90px;
-	top: 40px;
+	right: 100px;
+	top: 30px;
 	transform: rotate(-90deg);
+	width: 100px;
 }
 
 :focus  {
