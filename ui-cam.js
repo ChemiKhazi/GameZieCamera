@@ -18,7 +18,9 @@ $CamUI = {
 				else
 					screenfull.request();
 			}
-		})
+		});
+
+		document.querySelector('#toggle-palette').addEventListener('click', $GzCam.togglePalette, false);
 
 		var settingsControl = document.querySelector('#toggle-settings');
 		settingsControl.addEventListener('click', function(){

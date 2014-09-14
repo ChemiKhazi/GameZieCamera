@@ -8,41 +8,43 @@
 
 <body id="hand-right">
 
-<div id="display">
-	<div id="setting-controls">
-		<input type="button" id="toggle-fullscreen" />
-	</div>
-
-	<video autoplay="true"></video>
-	<canvas id="videoCanvas" width="128" height="128"></canvas>
-</div>
-
-<div id="control-panel">
-	<div id="options">
-		<div data-rel="threshold">
-			<label for="threshold">Dither</label>
-			<input id="threshold" type="range" min=1.0 max=10.0 />
+<div id="main">
+	<div id="display">
+		<div id="setting-controls">
+			<input type="button" id="toggle-fullscreen" />
 		</div>
-		<div data-rel="contrast">
-			<label for="contrast">Contrast</label>
-			<input id="contrast" type="range" min=-5 max=5.0 />
+
+		<video autoplay="true"></video>
+		<canvas id="videoCanvas" width="128" height="128"></canvas>
+	</div>
+
+	<div id="control-panel">
+		<div id="options">
+			<div data-rel="threshold">
+				<label for="threshold">Dither</label>
+				<input id="threshold" type="range" min=1.0 max=10.0 />
+			</div>
+			<div data-rel="contrast">
+				<label for="contrast">Contrast</label>
+				<input id="contrast" type="range" min=-5 max=5.0 />
+			</div>
+			<input id="leave-options" type="button" value="Back" />
 		</div>
-		<input id="leave-options" type="button" value="Back" />
-	</div>
 
-	<div id="palette">
-	</div>
-
-	<div id="dpad-settings">
-		<div>
-			<input type="button" id="toggle-settings" />
-			<input type="button" id="toggle-palette" />
-			<input type="button" id="toggle-source" />
+		<div id="palette">
 		</div>
-	</div>
 
-	<div id="controls">
-		<input type="button" id="snap" class="btn-main"/>
+		<div id="dpad-settings">
+			<div>
+				<input type="button" id="toggle-settings" />
+				<input type="button" id="toggle-palette" />
+				<input type="button" id="toggle-source" />
+			</div>
+		</div>
+
+		<div id="controls">
+			<input type="button" id="snap" class="btn-main"/>
+		</div>
 	</div>
 </div>
 
