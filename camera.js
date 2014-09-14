@@ -31,20 +31,29 @@ var $GzCam = {
 		$GzCam.videoTexture.minFilter = THREE.NearestFilter;
 		$GzCam.videoTexture.magFilter = THREE.NearestFilter;
 
-		// Setup material material
+		// Setup material settings
 		$GzCam.uniforms = {
 			baseTexture: { type: 't', value: $GzCam.videoTexture },
-			ditherTexture: { type: 't', value: THREE.ImageUtils.loadTexture('images/packedBayerMaps.png') },
-			resolution: { type: "v2", value: new THREE.Vector2(8, 8) },
 			pal1: { type: "v3", value: new THREE.Vector3(0.10,0.25,0.17) },
 			pal2: { type: "v3", value: new THREE.Vector3(0.30,0.47,0.20) },
 			pal3: { type: "v3", value: new THREE.Vector3(0.66,0.74,0.23) },
 			pal4: { type: "v3", value: new THREE.Vector3(0.82,0.88,0.56) },
 			setting: { type: "v2", value: new THREE.Vector2($GzCam.defaults.x, $GzCam.defaults.y) }
 		};
+
+		if (window.devicePixelRatio == 2) {
+			$GzCam.uniforms.ditherTexture = { type: 't', value: THREE.ImageUtils.loadTexture('images/packedBayerX4.png') };
+			$GzCam.uniforms.resolution = { type: "v2", value: new THREE.Vector2(16, 16) };
+		}
+		else {
+			$GzCam.uniforms.ditherTexture = { type: 't',
+												value: THREE.ImageUtils.loadTexture('images/packedBayerMaps.png') };
+			$GzCam.uniforms.resolution = { type: "v2", value: new THREE.Vector2(8, 8) };
+		}
 		$GzCam.uniforms.ditherTexture.minFilter = THREE.NearestFilter;
 		$GzCam.uniforms.ditherTexture.magFilter = THREE.NearestFilter;
 
+		// Setup actual material
 		$GzCam.material = new THREE.ShaderMaterial({
 			uniforms: $GzCam.uniforms,
 			vertexShader: document.querySelector('#vtx').innerHTML,
@@ -53,7 +62,8 @@ var $GzCam = {
 
 		var geometry = new THREE.PlaneGeometry($GzCam.size, $GzCam.size);
 		$GzCam.mesh = new THREE.Mesh(geometry, $GzCam.material);
-		$GzCam.mesh.position.set(0.5,0.5,0);
+		// $GzCam.mesh.position.set(0.5,0.5,0);
+		$GzCam.mesh.position.set(0,0,0);
 		$GzCam.scene.add($GzCam.mesh);
 
 		$GzCam.render();
