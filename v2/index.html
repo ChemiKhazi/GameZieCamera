@@ -63,7 +63,7 @@
 	<script id="frg" type="x-shader/x-fragment">
 	uniform sampler2D baseTexture;
 	uniform sampler2D ditherTexture;
-	uniform vec2 resolution;
+	uniform vec2 resolution; // Resolution of bayer lookup map
 	uniform vec3 pal1;
 	uniform vec3 pal2;
 	uniform vec3 pal3;
@@ -79,16 +79,23 @@
 
 	void main() {
 
+		// gl_FragColor = vec4(gl_FragCoord.x/256.0, gl_FragCoord.y/256.0, 0, 1);
+		// gl_FragColor = vec4(vUv.x, vUv.y, 0, 1);
 		vec3 sourcePixel = texture2D(baseTexture, vUv).rgb;
 
 		// Contrast
 		sourcePixel = clamp(sourcePixel + vec3(setting.x, setting.x, setting.x), vec3(0,0,0), vec3(1,1,1));
 
-		vec3 bayerMap = texture2D(ditherTexture, vec2(mod(gl_FragCoord.xy/resolution.xy,1.0))).rgb;
-		
+		vec2 lookup = gl_FragCoord.xy;
+		// vec2 lookup = vUv * vec2(256, 256);
+
+		vec2 bayerUv = mod(lookup/resolution.xy,1.0);
+		vec3 bayerMap = texture2D(ditherTexture, vec2(bayerUv)).rgb;
+
 		// Dither
 		vec3 dither = vec3(bayerMap.z, bayerMap.z, bayerMap.z) * setting.y;
 		vec3 colorDither = clamp(sourcePixel + dither, vec3(0,0,0), vec3(1,1,1));
+		// gl_FragColor = vec4(dither, 1);
 
 	    // Find the closest palette colour
 		float d1 = abs(lum(colorDither) - lum(pal1));
