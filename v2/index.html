@@ -70,6 +70,7 @@
 	uniform vec3 pal2;
 	uniform vec3 pal3;
 	uniform vec3 pal4;
+	uniform vec4 palLum;
 	uniform vec2 setting;
 	varying vec2 vUv;
 	const vec3 lumFactor = vec3(0.2125, 0.7154, 0.0721);
@@ -80,9 +81,6 @@
 	}
 
 	void main() {
-
-		// gl_FragColor = vec4(gl_FragCoord.x/256.0, gl_FragCoord.y/256.0, 0, 1);
-		// gl_FragColor = vec4(vUv.x, vUv.y, 0, 1);
 		vec3 sourcePixel = texture2D(baseTexture, vUv).rgb;
 
 		// Contrast
@@ -97,13 +95,12 @@
 		// Dither
 		vec3 dither = vec3(bayerMap.z, bayerMap.z, bayerMap.z) * setting.y;
 		vec3 colorDither = clamp(sourcePixel + dither, vec3(0,0,0), vec3(1,1,1));
-		// gl_FragColor = vec4(dither, 1);
 
 	    // Find the closest palette colour
-		float d1 = abs(lum(colorDither) - lum(pal1));
-		float d2 = abs(lum(colorDither) - lum(pal2));
-		float d3 = abs(lum(colorDither) - lum(pal3));
-		float d4 = abs(lum(colorDither) - lum(pal4));
+		float d1 = abs(lum(colorDither) - palLum.x);
+		float d2 = abs(lum(colorDither) - palLum.y);
+		float d3 = abs(lum(colorDither) - palLum.z);
+		float d4 = abs(lum(colorDither) - palLum.w);
 
 	    float minValue = min(d1, min(d2, min(d3, d4)));
 	 

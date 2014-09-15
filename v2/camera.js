@@ -116,6 +116,8 @@ var $GzCam = {
 	},
 	paletteToUniform: function(index){
 		$GzCam.currentPal = index;
+		// Calculate the color information in 0-1 space,
+		// being stored in 0-255 space
 		for (var i = 0; i < $GzCam.palettes[index].length; i++)
 		{
 			var color = $GzCam.palettes[index][i];
@@ -128,5 +130,22 @@ var $GzCam = {
 																	color[1]/255,
 																	color[2]/255);
 		}
+
+		// Next calculate the luminance of each color, for the shader
+		if ($GzCam.uniforms.palLum === undefined)
+			$GzCam.uniforms.palLum = { type: 'v4' };
+		$GzCam.uniforms.palLum.value = new THREE.Vector4($GzCam.colorToLum($GzCam.uniforms.pal1.value),
+														$GzCam.colorToLum($GzCam.uniforms.pal2.value),
+														$GzCam.colorToLum($GzCam.uniforms.pal3.value),
+														$GzCam.colorToLum($GzCam.uniforms.pal4.value));
+
+	},
+	colorToLum: function(color) {
+		// vector dot operation to get luminance
+		var luminance = 0;
+		luminance += (color.x * 0.2125);
+		luminance += (color.y * 0.7154);
+		luminance += (color.z * 0.0721);
+		return luminance;
 	}
 }
