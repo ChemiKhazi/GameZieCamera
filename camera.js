@@ -1,8 +1,9 @@
 var $GzCam = {
 	size: 256,
 	sizeH: 256/2,
-	defaults: {x:0, y:6},
+	defaults: {x:1, y:0, z:6},
 	currentPal: 0,
+	modeIndex: true,
 	palettes: [
 		[
 		[49, 74, 99],
@@ -52,17 +53,13 @@ var $GzCam = {
 		$GzCam.videoTexture.minFilter = THREE.NearestFilter;
 		$GzCam.videoTexture.magFilter = THREE.NearestFilter;
 
-		// Setup material settings
+		// Setup shader uniforms
 		$GzCam.uniforms = {
 			baseTexture: { type: 't', value: $GzCam.videoTexture },
-			// pal1: { type: "v3", value: new THREE.Vector3(0.10,0.25,0.17) },
-			// pal2: { type: "v3", value: new THREE.Vector3(0.30,0.47,0.20) },
-			// pal3: { type: "v3", value: new THREE.Vector3(0.66,0.74,0.23) },
-			// pal4: { type: "v3", value: new THREE.Vector3(0.82,0.88,0.56) },
-			setting: { type: "v2", value: new THREE.Vector2($GzCam.defaults.x, $GzCam.defaults.y) }
+			setting: { type: "v3", value: new THREE.Vector3($GzCam.defaults.x, $GzCam.defaults.y, $GzCam.defaults.z) }
 		};
 		$GzCam.paletteToUniform(1);
-
+		// Use a different lookup texture for higher density displays
 		if (window.devicePixelRatio == 2) {
 			$GzCam.uniforms.ditherTexture = { type: 't', value: THREE.ImageUtils.loadTexture('images/packedBayerX4.png') };
 			$GzCam.uniforms.resolution = { type: "v2", value: new THREE.Vector2(16, 16) };
@@ -75,16 +72,21 @@ var $GzCam = {
 		$GzCam.uniforms.ditherTexture.minFilter = THREE.NearestFilter;
 		$GzCam.uniforms.ditherTexture.magFilter = THREE.NearestFilter;
 
-		// Setup actual material
-		$GzCam.material = new THREE.ShaderMaterial({
+		// Setup the two materials/shaders for the different color modes
+		$GzCam.matNearest = new THREE.ShaderMaterial({
 			uniforms: $GzCam.uniforms,
 			vertexShader: document.querySelector('#vtx').innerHTML,
-			fragmentShader: document.querySelector('#frg').innerHTML
+			fragmentShader: document.querySelector('#nearest-color').innerHTML
+		});
+		$GzCam.matIndex = new THREE.ShaderMaterial({
+			uniforms: $GzCam.uniforms,
+			vertexShader: document.querySelector('#vtx').innerHTML,
+			fragmentShader: document.querySelector('#index-color').innerHTML
 		});
 
+		// Set up the plane to render to, using the nearest index material
 		var geometry = new THREE.PlaneGeometry($GzCam.size, $GzCam.size);
-		$GzCam.mesh = new THREE.Mesh(geometry, $GzCam.material);
-		// $GzCam.mesh.position.set(0.5,0.5,0);
+		$GzCam.mesh = new THREE.Mesh(geometry, $GzCam.matIndex);
 		$GzCam.mesh.position.set(0,0,0);
 		$GzCam.scene.add($GzCam.mesh);
 
@@ -116,6 +118,8 @@ var $GzCam = {
 	},
 	paletteToUniform: function(index){
 		$GzCam.currentPal = index;
+		// Calculate the color information in 0-1 space,
+		// being stored in 0-255 space
 		for (var i = 0; i < $GzCam.palettes[index].length; i++)
 		{
 			var color = $GzCam.palettes[index][i];
@@ -127,6 +131,35 @@ var $GzCam = {
 			$GzCam.uniforms[uniformName].value = new THREE.Vector3(color[0]/255,
 																	color[1]/255,
 																	color[2]/255);
+		}
+
+		// Next calculate the luminance of each color, for the shader
+		if ($GzCam.uniforms.palLum === undefined)
+			$GzCam.uniforms.palLum = { type: 'v4' };
+		$GzCam.uniforms.palLum.value = new THREE.Vector4($GzCam.colorToLum($GzCam.uniforms.pal1.value),
+														$GzCam.colorToLum($GzCam.uniforms.pal2.value),
+														$GzCam.colorToLum($GzCam.uniforms.pal3.value),
+														$GzCam.colorToLum($GzCam.uniforms.pal4.value));
+
+	},
+	colorToLum: function(color) {
+		// vector dot operation to get luminance
+		var luminance = 0;
+		luminance += (color.x * 0.2125);
+		luminance += (color.y * 0.7154);
+		luminance += (color.z * 0.0721);
+		return luminance;
+	},
+	toggleColorMode: function(){
+		if ($GzCam.modeIndex)
+		{
+			$GzCam.mesh.material = $GzCam.matNearest;
+			$GzCam.modeIndex = false;
+		}
+		else
+		{
+			$GzCam.mesh.material = $GzCam.matIndex;
+			$GzCam.modeIndex = true;
 		}
 	}
 }
