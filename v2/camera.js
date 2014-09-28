@@ -62,12 +62,12 @@ var $GzCam = {
 		// Use a different lookup texture for higher density displays
 		if (window.devicePixelRatio == 2) {
 			$GzCam.uniforms.ditherTexture = { type: 't', value: THREE.ImageUtils.loadTexture('images/packedBayerX4.png') };
-			$GzCam.uniforms.resolution = { type: "v2", value: new THREE.Vector2(16, 16) };
+			$GzCam.uniforms.resolution = { type: "v4", value: new THREE.Vector4(16, 16, 512, 512) };
 		}
 		else {
 			$GzCam.uniforms.ditherTexture = { type: 't',
 												value: THREE.ImageUtils.loadTexture('images/packedBayerMaps.png') };
-			$GzCam.uniforms.resolution = { type: "v2", value: new THREE.Vector2(8, 8) };
+			$GzCam.uniforms.resolution = { type: "v4", value: new THREE.Vector4(8, 8, 256, 256) };
 		}
 		$GzCam.uniforms.ditherTexture.minFilter = THREE.NearestFilter;
 		$GzCam.uniforms.ditherTexture.magFilter = THREE.NearestFilter;
