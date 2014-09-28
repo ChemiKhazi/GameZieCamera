@@ -78,7 +78,7 @@
 	<script id="index-color" type="x-shader/x-fragment">
 	uniform sampler2D baseTexture;
 	uniform sampler2D ditherTexture;
-	uniform vec2 resolution; // Resolution of bayer lookup map
+	uniform vec4 resolution; // Resolution of bayer lookup map
 	uniform vec3 pal1;
 	uniform vec3 pal2;
 	uniform vec3 pal3;
@@ -103,8 +103,9 @@
 		// Clamp between 0-1
 		sourcePixel = clamp(sourcePixel, vec3(0,0,0), vec3(1,1,1));
 
-		vec2 lookup = gl_FragCoord.xy;
-		// vec2 lookup = vUv * vec2(256, 256);
+		// vec2 lookup = gl_FragCoord.xy;
+		vec2 lookup = vUv * resolution.zw;
+		// vec2 lookup = vUv * vec2(256, 256); //resolution.zw;
 
 		vec2 bayerUv = mod(lookup/resolution.xy,1.0);
 		vec3 bayerMap = texture2D(ditherTexture, vec2(bayerUv)).rgb;
@@ -138,7 +139,7 @@
 	<script id="nearest-color" type="x-shader/x-fragment">
 	uniform sampler2D baseTexture;
 	uniform sampler2D ditherTexture;
-	uniform vec2 resolution; // Resolution of bayer lookup map
+	uniform vec4 resolution; // Resolution of bayer lookup map
 	uniform vec3 pal1;
 	uniform vec3 pal2;
 	uniform vec3 pal3;
@@ -170,8 +171,8 @@
 		// Clamp between 0-1
 		sourcePixel = clamp(sourcePixel, vec3(0,0,0), vec3(1,1,1));
 
-		vec2 lookup = gl_FragCoord.xy;
-		// vec2 lookup = vUv * vec2(256, 256);
+		// vec2 lookup = gl_FragCoord.xy;
+		vec2 lookup = vUv * resolution.zw;
 
 		vec2 bayerUv = mod(lookup/resolution.xy,1.0);
 		vec3 bayerMap = texture2D(ditherTexture, vec2(bayerUv)).rgb;
