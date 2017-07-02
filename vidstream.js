@@ -117,7 +117,10 @@ var $VidStream = {
 
         $VidStream.video.pause();
         $VidStream.video.src = null;
-        $VidStream.videoStream.getVideoTracks().stop();
+        $VidStream.videoStream.getVideoTracks()
+                    .forEach(function(video){
+                        video.stop();
+                    });
         $VidStream.fetchStream(newSource);
     },
     gotStream: function(stream){
