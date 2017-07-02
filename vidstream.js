@@ -5,7 +5,7 @@ var $VidStream = {
     texture: null,
     currentStream: -1,
     init: function(){
-        // console.log("Init Video Stream");
+        console.log("Init Video Stream");
         $VidStream.video = document.querySelector('video');
 
         $VidStream.canvas = document.querySelector('#videoCanvas');
@@ -21,14 +21,14 @@ var $VidStream = {
             alert('This page needs a Web browser with the objects window.* and navigator.*!');
         }
         else {
-
+            console.log("Fetching sources");
             // Check if possible to choose video source
-            if (typeof MediaStreamTrack === 'undefined'){
+            if (typeof MediaDevices === 'undefined'){
                 // Can't choose source, call fetch sources with null
                 $VidStream.fetchSources(null);
             } else {
                 // Get source data
-                MediaStreamTrack.getSources($VidStream.fetchSources);
+                navigator.mediaDevices.enumerateDevices().then($VidStream.fetchSources);
             }
         }
     },
@@ -57,11 +57,8 @@ var $VidStream = {
         return true;
     },
     fetchSources: function(sourceInfos) {
-        // console.log("FetchSources");
-        navigator.getUserMedia = navigator.getUserMedia ||
-                                navigator.webkitGetUserMedia ||
-                                navigator.mozGetUserMedia ||
-                                navigator.msGetUserMedia;
+        console.log("FetchSources");
+        navigator.getUserMedia = navigator.mediaDevices.getUserMedia;
         if (navigator.getUserMedia === undefined)
         {
             console.log("No getUserMedia");
@@ -75,9 +72,10 @@ var $VidStream = {
         if (sourceInfos !== null) {
             for (var i = 0; i != sourceInfos.length; ++i) {
                 var sourceInfo = sourceInfos[i];
-                if (sourceInfo.kind === "video")
+                if (sourceInfo.kind === "videoinput")
                 {
-                    $VidStream.sources[$VidStream.sources.length] = sourceInfo.id;
+                    console.log("Label:" + sourceInfo.label + ", Id:" + sourceInfo.deviceId);
+                    $VidStream.sources.push(sourceInfo.deviceId);
                 }
             }
         }
@@ -86,7 +84,7 @@ var $VidStream = {
     fetchStream: function(sourceIndex){
         // console.log("fetchStream " + sourceIndex);
         // Default parameters if no source info
-        var parameters = {
+        var constraints = {
             video: true,
             audio: false
         }
@@ -94,11 +92,13 @@ var $VidStream = {
         // Actually have sources...
         if ($VidStream.sources.length > 0)
         {
-            parameters.video = {optional: [{sourceId: $VidStream.sources[sourceIndex]}] };
+            constraints.video = {deviceId: $VidStream.sources[sourceIndex]};
             $VidStream.currentStream = sourceIndex;
         }
 
-        navigator.getUserMedia(parameters, $VidStream.gotStream, $VidStream.noStream);
+        navigator.getUserMedia(constraints)
+                .then($VidStream.gotStream)
+                .catch($VidStream.noStream)
     },
     toggleStream: function(){
         if ($VidStream.sources.length == 0)
@@ -122,8 +122,8 @@ var $VidStream = {
         $VidStream.video.src = window.URL.createObjectURL(stream);
         $VidStream.video.play();
     },
-    noStream: function(errorMsg) {
-        console.log(errorMsg);
-        alert('Access to camera was denied! ' + errorMsg);
+    noStream: function(error) {
+        console.log(error.message);
+        alert('Access to camera was denied! ' + error.message);
     }
 }
