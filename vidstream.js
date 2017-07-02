@@ -92,11 +92,17 @@ var $VidStream = {
         // Actually have sources...
         if ($VidStream.sources.length > 0)
         {
-            constraints.video = {deviceId: $VidStream.sources[sourceIndex]};
             $VidStream.currentStream = sourceIndex;
+            deviceIdString = $VidStream.sources[sourceIndex] + "";
+            console.log("Chosen device ID: " + deviceIdString);
+            constraints.video = {
+                deviceId: {
+                    exact: deviceIdString
+                }
+            };
         }
 
-        navigator.getUserMedia(constraints)
+        navigator.mediaDevices.getUserMedia(constraints)
                 .then($VidStream.gotStream)
                 .catch($VidStream.noStream)
     },
