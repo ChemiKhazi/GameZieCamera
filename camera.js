@@ -107,6 +107,10 @@ var $GzCam = {
 		img.height = 0;
 		img.width = img.height = $GzCam.size;
 		img.style.top = -$GzCam.size;
+		img.name = "Snapshot " + (filmroll.children.length + 1);
+		img.addEventListener('click', function(){
+			download(img.src, img.name + ".png", "image/png");
+		});
 		filmroll.insertBefore(img, filmroll.firstChild);
 		morpheus(img, { top: 0, duration: 1000 });
 	},
