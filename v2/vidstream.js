@@ -128,7 +128,7 @@ var $VidStream = {
         $VidStream.videoStream = stream;
 
         $VidStream.video.addEventListener('playing', $VidStream.setupContext);
-        $VidStream.video.src = window.URL.createObjectURL(stream);
+        $VidStream.video.srcObject = stream;
         $VidStream.video.play();
     },
     noStream: function(error) {
