@@ -100,6 +100,12 @@ var $GzCam = {
 			[17, 198, 0],
 			[223, 166, 119],
 			[239, 247, 182]
+		],
+		[ // https://itch.io/post/57105
+			[62, 62, 62],
+			[253, 128, 198],
+			[140, 223, 253],
+			[255, 246, 140]
 		]
 	],
 	webGl: function() {
@@ -180,14 +186,22 @@ var $GzCam = {
 	takeSnap: function(){
 		var source = $GzCam.renderer.domElement.toDataURL("image/png");
 		var filmroll = document.getElementById("filmroll");
+		var dateTime = new Date();
 		img = document.createElement("img");
 		img.src = source;
 		img.height = 0;
 		img.width = img.height = $GzCam.size;
 		img.style.top = -$GzCam.size;
-		img.name = "Snapshot " + (filmroll.children.length + 1);
+		var fileName = "GZ_Cam_%Y%M%D_%H%M%S";
+		fileName = fileName.replace("%Y", dateTime.getFullYear())
+							.replace("%M", ("0" + dateTime.getMonth()).slice(-2) )
+							.replace("%D", ("0" + dateTime.getDate()).slice(-2))
+							.replace("%H", ("0" + dateTime.getHours()).slice(-2))
+							.replace("%M", ("0" + dateTime.getMinutes()).slice(-2))
+							.replace("%S", ("0" + dateTime.getSeconds()).slice(-2));
+		img.name = fileName;
 		img.addEventListener('click', function(){
-			download(img.src, img.name + ".png", "image/png");
+			download(img.src, fileName + ".png", "image/png");
 		});
 		filmroll.insertBefore(img, filmroll.firstChild);
 		morpheus(img, { top: 0, duration: 1000 });
