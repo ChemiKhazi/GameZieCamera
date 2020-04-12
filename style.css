@@ -68,8 +68,8 @@ video, #videoCanvas {
 
 #controls {
 	position: absolute;
-	top: 0px;
-	right: 20px;
+	top: 20px;
+	right: 40px;
 }
 #controls input[type=button] {
 	width: 64px;
