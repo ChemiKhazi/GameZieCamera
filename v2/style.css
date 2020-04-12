@@ -68,8 +68,8 @@ video, #videoCanvas {
 
 #controls {
 	position: absolute;
-	top: 0px;
-	right: 20px;
+	top: 20px;
+	right: 40px;
 }
 #controls input[type=button] {
 	width: 64px;
@@ -113,27 +113,40 @@ video, #videoCanvas {
 	display: block;
 	position: absolute;
 	top: 0px;
-	left: -200px;
-	width: 196px;
+	left: -256px;
+	width: 256px;
 	height: 146px;
 	background: url('images/settings-panel.png') left top no-repeat;
+	font-family: 'Titillium Web', sans-serif;
+	color: #0c157c;
+	text-transform: uppercase;
 }
 
 #options>div {
-	margin: 20px 0 0 40px;
+	margin: 0px 0 0 40px;
 }
-#settings label { display: none;  }
+#settings label {
+	position: relative;
+	top: 6px;
+}
 #settings input { width: 100%; }
 #settings div {
 	display: block;
-	width: 80%;
+	width: 90%;
+}
+
+#palette {
 	padding-top: 10px;
+	width: 200px;
 }
-div[data-rel="threshold"] {
-	background: url('images/label-dither.png') no-repeat;
-}
-div[data-rel="contrast"] {
-	background: url('images/label-contrast.png') no-repeat;
+
+#palette input {
+	font-family: 'Titillium Web', sans-serif;
+	color: #0c157c;
+	display:  block;
+	width: 90%;
+	height: 30px;
+	margin: 10px auto;
 }
 
 #toggle-panel {
